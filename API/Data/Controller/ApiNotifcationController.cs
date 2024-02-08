@@ -137,7 +137,7 @@ namespace AuthSystem.Data.Controller
             {
                 foreach (DataRow dt in table.Rows)
                 {
-                    delete += $@" delete tbl_NotificationModel where id='" + dt["Id"].ToString() + "' and EmployeeID='" + data.EmployeeID + "'";
+                    delete += $@" update tbl_NotificationModel set isRead ='1'  where id='" + dt["Id"].ToString() + "' and EmployeeID='" + data.EmployeeID + "'";
                 }
                 db.AUIDB_WithParam(delete); 
                 return Ok("Deleted");
@@ -156,7 +156,7 @@ namespace AuthSystem.Data.Controller
             DataTable table = db.SelectDb(sql).Tables[0];
             if (table.Rows.Count != 0)
             {
-                string Insert = $@" delete tbl_NotificationModel where id='" + data.id + "' and EmployeeID='" + data.EmployeeID + "'";
+                string Insert = $@" update tbl_NotificationModel set isRead ='1'  where id='" + data.id + "' and EmployeeID='" + data.EmployeeID + "'";
                 db.AUIDB_WithParam(Insert);
                 return Ok("Deleted");
             }
