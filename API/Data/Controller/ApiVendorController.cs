@@ -259,6 +259,7 @@ FROM            tbl_VendorModel INNER JOIN
 
 
             string result = "";
+            string description = "";
             string query = "";
             try
             {
@@ -283,7 +284,7 @@ FROM            tbl_VendorModel INNER JOIN
                     {
                         Logo = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.VendorLogo.Replace(" ", "%20"); ;
                     }
-
+                    description = data.Description.Replace("'", "''");
                     if (data.Id == 0)
                     {
                         string sql = $@"select * from tbl_VendorModel where VendorName='" + data.VendorName + "' and Status=5";
@@ -291,7 +292,7 @@ FROM            tbl_VendorModel INNER JOIN
                         if (dt.Rows.Count == 0)
                         {
                             query += $@"insert into tbl_VendorModel (VendorName,BusinessTypeId,Description,Services,WebsiteUrl,FeatureImg,Gallery,Cno,Email,VideoUrl,VrUrl,BusinessLocationID,Status,FileUrl,Map,VendorLogo,Address) values
-                                     ('"+data.VendorName+"','"+data.BusinessTypeId + "','"+data.Description + "','"+data.Services + "','"+data.WebsiteUrl + "','"+ FeaturedImage + "','"+data.Gallery + "','"+data.Cno + "','"+data.Email + "'" +
+                                     ('"+data.VendorName + "','"+data.BusinessTypeId + "','"+ description + "','"+data.Services + "','"+data.WebsiteUrl + "','"+ FeaturedImage + "','"+data.Gallery + "','"+data.Cno + "','"+data.Email + "'" +
                                      ",'"+data.VideoUrl + "','"+data.VrUrl + "','"+data.BusinessLocationID + "',5,'"+data.FileUrl + "','"+data.Map + "','"+ Logo + "','"+data.Address + "')";
                             db.AUIDB_WithParam(query);
                                 result = "Inserted Successfully";

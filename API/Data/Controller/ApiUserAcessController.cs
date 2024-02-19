@@ -89,7 +89,7 @@ namespace AuthSystem.Data.Controller
                 result.Status = "Error";
                 return BadRequest(result);
             }
-            return Ok(result);
+        
         }
         [HttpPost]
         public async Task<IActionResult> SaveJWToken(JWTokenModel data)
