@@ -351,17 +351,29 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
         [HttpPost]
         public async Task<IActionResult> PrivilegeByUserAndBType(UserIDVM data)
         {
+            string sql = $@"select * from UsersModel where EmployeeID ='" + data.EmployeeID + "' and isVIP = 1";
             var param = new IDataParameter[]
             {
             new SqlParameter("@EmployeeID",data.EmployeeID),
             new SqlParameter("@BusinessTypeName",data.BusinessType)
             };
-            DataTable table = db.SelectDb_SP("SP_GetPFByUserAndBType", param).Tables[0];
+            DataTable dt = db.SelectDb(sql).Tables[0];
+            DataTable table = new DataTable();
+            if (dt.Rows.Count != 0)
+            {
+                table = db.SelectDb_SP("Get_PrivilegeisVIP", param).Tables[0];
+
+
+            }
+            else
+            {
+                table = db.SelectDb_SP("SP_GetPFByUserAndBType", param).Tables[0];
+            }
             var result = new List<PrivilegeUserVM>();
             foreach (DataRow dr in table.Rows)
             {
                 var item = new PrivilegeUserVM();
-                
+
                 item.EmployeeID = dr["EmployeeID"].ToString();
                 item.Title = dr["Title"].ToString();
                 item.Validity = Convert.ToDateTime(dr["Validity"].ToString()).ToString("MM/dd/yyyy");
@@ -376,6 +388,7 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
 
                 result.Add(item);
             }
+
 
             return Ok(result);
         }
