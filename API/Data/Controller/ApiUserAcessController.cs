@@ -548,7 +548,7 @@ namespace AuthSystem.Data.Controller
                 await client.AuthenticateAsync("app@alfardan.com.qa", "Oyster2023!");
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
-
+                    
             }
             return Ok();
         }

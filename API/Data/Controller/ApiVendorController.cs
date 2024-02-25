@@ -88,8 +88,8 @@ namespace AuthSystem.Data.Controller
                          tbl_BusinessModel.Address AS location, tbl_BusinessModel.BusinessName, tbl_StatusModel.Name AS Status, tbl_VendorModel.BusinessLocationID , tbl_VendorModel.BusinessTypeId
 FROM            tbl_VendorModel INNER JOIN
                          tbl_BusinessTypeModel ON tbl_VendorModel.BusinessTypeId = tbl_BusinessTypeModel.Id LEFT OUTER JOIN
-                         tbl_BusinessModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessModel.Id LEFT OUTER JOIN
-                         tbl_BusinessLocationModel ON tbl_BusinessModel.LocationId = tbl_BusinessLocationModel.Id LEFT OUTER JOIN
+                         tbl_BusinessModel ON tbl_BusinessTypeModel.Id = tbl_BusinessModel.TypeId LEFT OUTER JOIN
+                         tbl_BusinessLocationModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessLocationModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON tbl_VendorModel.Status = tbl_StatusModel.Id
 WHERE        (tbl_VendorModel.Status = 5)
 ORDER BY tbl_VendorModel.Id DESC";
@@ -260,6 +260,7 @@ FROM            tbl_VendorModel INNER JOIN
 
             string result = "";
             string description = "";
+            string services = "";
             string query = "";
             try
             {
@@ -285,18 +286,59 @@ FROM            tbl_VendorModel INNER JOIN
                         Logo = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.VendorLogo.Replace(" ", "%20"); ;
                     }
                     description = data.Description.Replace("'", "''");
+                    services = data.Services == null? "" : data.Services.Replace("'", "''");
                     if (data.Id == 0)
                     {
-                        string sql = $@"select * from tbl_VendorModel where VendorName='" + data.VendorName + "' and Status=5";
+                        string sql = $@"select * from tbl_VendorModel where VendorName='" + data.VendorName.Replace("'", "''") + "' and Status=5";
                         DataTable dt = db.SelectDb(sql).Tables[0];
                         if (dt.Rows.Count == 0)
                         {
-                            query += $@"insert into tbl_VendorModel (VendorName,BusinessTypeId,Description,Services,WebsiteUrl,FeatureImg,Gallery,Cno,Email,VideoUrl,VrUrl,BusinessLocationID,Status,FileUrl,Map,VendorLogo,Address) values
-                                     ('"+data.VendorName + "','"+data.BusinessTypeId + "','"+ description + "','"+data.Services + "','"+data.WebsiteUrl + "','"+ FeaturedImage + "','"+data.Gallery + "','"+data.Cno + "','"+data.Email + "'" +
-                                     ",'"+data.VideoUrl + "','"+data.VrUrl + "','"+data.BusinessLocationID + "',5,'"+data.FileUrl + "','"+data.Map + "','"+ Logo + "','"+data.Address + "')";
-                            db.AUIDB_WithParam(query);
-                                result = "Inserted Successfully";
-                            return Ok(result);
+                            //query += $@"insert into tbl_VendorModel (VendorName,BusinessTypeId,Description,Services,WebsiteUrl,FeatureImg,Gallery,Cno,Email,VideoUrl,VrUrl,BusinessLocationID,Status,FileUrl,Map,VendorLogo,Address,DateCreated) values
+                            //         ('"+data.VendorName.Replace("'", "''") + "','"+data.BusinessTypeId + "','"+ description + "','"+ services + "','"+data.WebsiteUrl + "','"+ FeaturedImage + "','"+data.Gallery + "','"+data.Cno + "','"+data.Email + "'" +
+                            //         ",'"+data.VideoUrl + "','"+data.VrUrl + "','"+data.BusinessLocationID + "',5,'"+data.FileUrl + "','"+data.Map + "','"+ Logo + "','"+data.Address.Replace("'", "''") + "','"+ DateTime.Now.ToString() + "')";
+                            //db.AUIDB_WithParam(query);
+
+                            query += $@"
+                                    INSERT INTO [dbo].[tbl_VendorModel]
+                                               ([VendorName]
+                                               ,[BusinessTypeId]
+                                               ,[Description]
+                                               ,[Services]
+                                               ,[WebsiteUrl]
+                                               ,[FeatureImg]
+                                               ,[Gallery]
+                                               ,[Cno]
+                                               ,[Email]
+                                               ,[VideoUrl]
+                                               ,[VrUrl]
+                                               ,[BusinessLocationID]
+                                               ,[DateCreated]
+                                               ,[Status]
+                                               ,[FileUrl]
+                                               ,[Map]
+                                               ,[VendorLogo]
+                                               ,[Address])
+                                         VALUES
+                                               ('" + data.VendorName.Replace("'", "''") + "'" +
+                                                ",'" + data.BusinessTypeId + "'," +
+                                                "'" + description + "'," +
+                                                "'" + services + "'," +
+                                                "'" + data.WebsiteUrl + "'," +
+                                                "'" + FeaturedImage + "'," +
+                                                "'" + data.Gallery + "'," +
+                                                "'" + data.Cno + "'," +
+                                                "'" + data.Email + "'," +
+                                                "'" + data.VideoUrl + "'," +
+                                                "'" + data.VrUrl + "'," +
+                                                "'" + data.BusinessLocationID + "'," +
+                                                "'" + DateTime.Now.ToString("yyyy-MM-dd") + "'," +
+                                                "'5'," +
+                                                "'" + data.FileUrl + "'," +
+                                                "'" + data.Map + "'," +
+                                                "'" + Logo + "'," +
+                                                "'" + data.Address.Replace("'", "''") + "')";
+                            result = db.AUIDB_WithParam(query) + " Added";
+                            return Ok("Inserted Successfully");
 
                         }
                         else
@@ -307,10 +349,10 @@ FROM            tbl_VendorModel INNER JOIN
                     }
                     else
                     {
-                         query += $@"update  tbl_VendorModel set VendorName='" + data.VendorName + "' , BusinessTypeId='" + data.BusinessTypeId + "' , Description='" + data.Description + "' , Services='" + data.Services
+                         query += $@"update  tbl_VendorModel set VendorName='" + data.VendorName.Replace("'", "''") + "' , BusinessTypeId='" + data.BusinessTypeId + "' , Description='" + data.Description.Replace("'", "''") + "' , Services='" + services
                             + "' , WebsiteUrl='" + data.WebsiteUrl + "' , FeatureImg='" + FeaturedImage + "' , Gallery='" + data.Gallery + "' , Cno='" + data.Cno + "', Email='" + data.Email + "', VideoUrl='"
                             + data.VideoUrl + "' , VrUrl='" + data.VrUrl + "'  , BusinessLocationID='" + data.BusinessLocationID + "' , Status='5' , FileUrl='" + data.FileUrl
-                            + "' , Map='" + data.Map + "' , VendorLogo='" + Logo + "' , Address='" + data.Address + "'  where  Id='" + data.Id + "' ";
+                            + "' , Map='" + data.Map + "' , VendorLogo='" + Logo + "' , Address='" + data.Address.Replace("'", "''") + "'  where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query); 
 
                         result = "Updated Successfully";
