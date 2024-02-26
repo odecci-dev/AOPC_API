@@ -52,7 +52,7 @@ namespace AuthSystem.Data.Controller
                         on a.MembershipID equals b.Id
                         join c in _context.tbl_CorporateModel
                         on a.CorporateID equals c.Id
-                        join e in _context.tbl_UsersModel
+                        join e in _context.tbl_UsersModel2
                        on c.Id equals e.CorporateID
                         select new
                         {
@@ -79,12 +79,11 @@ namespace AuthSystem.Data.Controller
         {
             string sql = $@"SELECT DISTINCT 
                          tbl_CorporateModel.CorporateName, tbl_CorporateModel.Address, tbl_CorporateModel.CNo, tbl_CorporateModel.EmailAddress, tbl_CorporateModel.CompanyID, tbl_MembershipModel.Name AS Tier, 
-                         tbl_MembershipModel.Description, tbl_CorporateModel.MembershipID AS memid, tbl_StatusModel.Name AS Status, tbl_CorporateModel.Id, tbl_CorporateModel.DateCreated, tbl_MembershipPrivilegeModel.MembershipID, 
+                         tbl_MembershipModel.Description, tbl_CorporateModel.MembershipID AS memid, tbl_StatusModel.Name AS Status, tbl_CorporateModel.Id, tbl_CorporateModel.DateCreated,
                          tbl_CorporateModel.VipCount AS VIPCount, tbl_CorporateModel.Count AS UserCount, tbl_CorporateModel.DateUsed, tbl_CorporateModel.DateEnded
-FROM            tbl_MembershipPrivilegeModel LEFT OUTER JOIN
-                         tbl_CorporateModel ON tbl_MembershipPrivilegeModel.MembershipID = tbl_CorporateModel.MembershipID LEFT OUTER JOIN
-                         tbl_StatusModel ON tbl_CorporateModel.Status = tbl_StatusModel.Id LEFT OUTER JOIN
-                         tbl_MembershipModel ON tbl_CorporateModel.MembershipID = tbl_MembershipModel.Id
+FROM            tbl_MembershipModel LEFT OUTER JOIN
+                         tbl_CorporateModel ON tbl_MembershipModel.Id = tbl_CorporateModel.MembershipID LEFT OUTER JOIN
+                         tbl_StatusModel ON tbl_CorporateModel.Status = tbl_StatusModel.Id 
 WHERE        (tbl_CorporateModel.Status = 1)";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<CorporateVM>();
@@ -205,15 +204,43 @@ WHERE        (tbl_CorporateModel.Status = 1)";
             {
                 string query = "";
 
-                if (data.CorporateName.Length != 0 || data.Description.Length != 0 || data.CNo.Length != 0 || data.EmailAddress.Length != null )
+                if (data.CorporateName.Length != 0 || data.CNo.Length != 0 || data.EmailAddress.Length != null )
                 {
                     if (data.Id == 0)
                     {
 
+                  
+
                         query += $@"insert into tbl_CorporateModel ( CorporateName, Address, CNo, EmailAddress, Status, MembershipID,Count,VipCount,DateUsed,DateEnded) values
                                 ('" + data.CorporateName + "','" + data.Address + "','" + data.CNo + "','" + data.EmailAddress + "','1','" + data.MembershipID + "' ,'" + data.Count + "' ,'" + data.VipCount + "' ,'" + data.DateUsed + "','" + data.DateEnded + "')";
                         db.AUIDB_WithParam(query);
-                            result = "Registered Successfully";
+
+
+                        string sql = $@"SELECT [Id]
+                                      ,[PrivilegeID]
+                                      ,[MembershipID]
+                                      ,[Count]
+                                      ,[VipCount]
+                                  FROM [dbo].[tbl_MembershipPrivilegeModel] where MembershipID='"+ data.MembershipID + "'";
+                        DataTable dt = db.SelectDb(sql).Tables[0];
+                        string sql_corpid = $@"SELECT top(1) [Id]
+                                      ,[PrivilegeID]
+                                      ,[MembershipID]
+                                      ,[Count]
+                                      ,[VipCount]
+                                  FROM [dbo].[tbl_MembershipPrivilegeModel] order by id desc";
+                        DataTable dt_corpid = db.SelectDb(sql_corpid).Tables[0];
+                        string delete = $@"delete tbl_CorporatePrivilegeTierModel where CorporateID='" + dt_corpid.Rows[0]["Id"].ToString() + "'";
+                        db.AUIDB_WithParam(delete);
+                        foreach (DataRow dr in dt.Rows)
+                        {
+                            string insert = $@"insert into tbl_CorporatePrivilegeTierModel (PrivilegeID,CorporateID,Count,VipCount) values 
+                                             ('" + dr["PrivilegeID"].ToString() + "','" + dt_corpid.Rows[0]["Id"].ToString() + "','" + data.Count + "','" + data.VipCount + "')";
+                            db.AUIDB_WithParam(insert);
+                        }
+
+                     
+                        result = "Registered Successfully";
                         
                     }
                     else
@@ -238,7 +265,7 @@ WHERE        (tbl_CorporateModel.Status = 1)";
                             {
 
                                 string insertuserprivilege = $@"insert into tbl_UserPrivilegeModel (PrivilegeId,UserID,Validity) values 
-                                ('" + dr_["PrivilegeID"].ToString() + "','" + dr["userid"].ToString() + "','" + dt_.Rows[0]["DateEnded"].ToString() + "')";
+                                ('" + dr_["PrivilegeID"].ToString() + "','" + dr["userid"].ToString() + "','" + Convert.ToDateTime(dt_.Rows[0]["DateEnded"].ToString()).ToString("yyyy-MM-dd") + "')";
                                 db.AUIDB_WithParam(insertuserprivilege);
                             }
                                 string updateuserprivilege = "";
@@ -250,8 +277,26 @@ WHERE        (tbl_CorporateModel.Status = 1)";
                             db.AUIDB_WithParam(updateuserprivilege);
 
                         }
+
+
+                        string sqls = $@"SELECT [Id]
+                                      ,[PrivilegeID]
+                                      ,[MembershipID]
+                                      ,[Count]
+                                      ,[VipCount]
+                                  FROM [dbo].[tbl_MembershipPrivilegeModel] where MembershipID='" + data.MembershipID + "'";
+                        DataTable dts = db.SelectDb(sqls).Tables[0];
+            
+                        string deletes = $@"delete tbl_CorporatePrivilegeTierModel where CorporateID='" + data.Id + "'";
+                        db.AUIDB_WithParam(deletes);
+                        foreach (DataRow drs in dts.Rows)
+                        {
+                            string insert = $@"insert into tbl_CorporatePrivilegeTierModel (PrivilegeID,CorporateID,Count,VipCount) values 
+                                             ('" + drs["PrivilegeID"].ToString() + "','" + data.Id + "','" + data.Count + "','" + data.VipCount + "')";
+                            db.AUIDB_WithParam(insert);
+                        }
                         query += $@"update  tbl_CorporateModel set CorporateName='" + data.CorporateName + "',Address='" + data.Address + "' " +
-                               ",CNo='" + data.CNo + "' , EmailAddress='" + data.EmailAddress + "' , MembershipID='" + data.MembershipID + "', Count='"+data.Count+"', VipCount='"+data.VipCount+"', DateUsed='"+data.DateUsed+"', DateEnded='"+data.DateEnded+"' where  Id='" + data.Id + "' ";
+                               ",CNo='" + data.CNo + "' , EmailAddress='" + data.EmailAddress + "' , MembershipID='" + data.MembershipID + "', Count='"+data.Count+"', VipCount='"+data.VipCount+"', DateUsed='"+Convert.ToDateTime(data.DateUsed).ToString("yyyy-MM-dd HH:mm:ss")+"', DateEnded='"+ Convert.ToDateTime(data.DateEnded).ToString("yyyy-MM-dd HH:mm:ss") + "' where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);
                         result = "Updated Successfully";
                     }
@@ -281,7 +326,7 @@ WHERE        (tbl_CorporateModel.Status = 1)";
             {
                 string query = "";
 
-                if (data.CorporateName.Length != 0 || data.Description.Length != 0 || data.CNo.Length != 0 || data.EmailAddress.Length != null)
+                if (data.CorporateName.Length != 0 ||data.CNo.Length != 0 || data.EmailAddress.Length != null)
                 {
                     if (data.Id == 0)
                     {

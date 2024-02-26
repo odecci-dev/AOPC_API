@@ -20,21 +20,20 @@ namespace AuthSystem.Models
 
         [Column(TypeName = "varchar(MAX)")]
         public string? EmailAddress { get; set; }
-        [Column(TypeName = "varchar(MAX)")]
-        public string? Description { get; set; }
-        
-        [Column(TypeName = "varchar(MAX)")]
-        public string? MembershipID { get; set; }
-        [Column(TypeName = "int")]
-        public int Count { get; set; }
-        [Column(TypeName = "int")]
-        public int VipCount { get; set; }
 
         [Column(TypeName = "int")]
         public int? Status { get; set; }
 
-        public string? DateUsed { get; set; }
-        public string? DateEnded { get; set; }
+        [Column(TypeName = "int")]
+        public int? MembershipID { get; set; }
+        [Column(TypeName = "int")]
+        public int Count { get; set; }
+        [Column(TypeName = "int")]
+        public int? VipCount { get; set; }
+
+
+        public DateTime? DateUsed { get; set; }
+        public DateTime? DateEnded { get; set; }
 
 
     }

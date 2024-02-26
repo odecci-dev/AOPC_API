@@ -1,6 +1,8 @@
-﻿using AuthSystem.Manager;
+﻿using API.Models;
+using AuthSystem.Manager;
 using AuthSystem.Models;
 using AuthSystem.Services;
+using CMS.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -34,7 +36,7 @@ namespace AuthSystem.Data.Controller
 
         }
         [HttpPost]
-        public IActionResult FinalUserRegistration(UsersModel data)
+        public IActionResult FinalUserRegistration(UserModel data)
         {
 
 

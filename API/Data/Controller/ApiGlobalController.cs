@@ -1,6 +1,8 @@
-﻿using AuthSystem.Manager;
+﻿using API.Models;
+using AuthSystem.Manager;
 using AuthSystem.Models;
 using AuthSystem.Services;
+using CMS.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

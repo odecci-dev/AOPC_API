@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using API.Models;
+using CMS.Models;
+using Microsoft.EntityFrameworkCore;
 namespace AuthSystem.Models
 {
     public class ApplicationDbContext : DbContext
@@ -6,7 +8,7 @@ namespace AuthSystem.Models
         public ApplicationDbContext(DbContextOptions options) : base(options)
         { }
         public DbSet<UsersModel> tbl_UsersModel { get; set; }
-        public DbSet<UsersModel> tbl_UsersModel2 { get; set; }
+        public DbSet<UserModel> tbl_UsersModel2 { get; set; }
         public DbSet<MembershipModel> tbl_MembershipModel { get; set; }
         public DbSet<CorporatePrivilegesModel> tbl_CorporatePrivilegesModel { get; set; }
         public DbSet<CorporateModel> tbl_CorporateModel { get; set; }

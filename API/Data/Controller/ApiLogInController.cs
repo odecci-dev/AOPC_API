@@ -22,6 +22,8 @@ using System.Web.Http.Results;
 using static AuthSystem.Data.Controller.ApiVendorController;
 using System.Security.Cryptography;
 using System.Text;
+using API.Models;
+using CMS.Models;
 
 namespace AuthSystem.Data.Controller
 {
@@ -49,7 +51,7 @@ namespace AuthSystem.Data.Controller
 
         [HttpPost]
 
-        public IActionResult LogIn (UsersModel data)
+        public IActionResult LogIn (UserModel data)
         {
             var pass3 = Cryptography.Decrypt("KOECkOzDU7+PCgWECK4nMGj5Oy0LOyqcEdO1ek1Jiz8=");
             string currentDate = DateTime.Now.ToString("yyyy-MM-dd");

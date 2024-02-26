@@ -25,6 +25,8 @@ using static AuthSystem.Data.Controller.ApiVendorController;
 using static AuthSystem.Data.Controller.ApiRegisterController;
 using System.Security.Cryptography;
 using System.Net;
+using API.Models;
+using CMS.Models;
 
 namespace AuthSystem.Data.Controller
 {
@@ -351,23 +353,25 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
 
                 return Ok(result);
         }
-        [HttpPost]
-        public async  Task<IActionResult> SaveUserInfo(UsersModel data)
-        {
-            try
-            {
-                string result = "";
-                GlobalVariables gv = new GlobalVariables();
-                _global.Token = _global.GenerateToken(data.Username, _appSettings.Key.ToString());
-                _global.Status = gv.EmployeeRegistration(data, _global.Token, _context);
-            }
+        //[HttpPost]
+        //public async  Task<IActionResult> SaveUserInfo(UsersModel data)
+        //{
+        //    try
+        //    {
+        //        string result = "";
+        //        GlobalVariables gv = new GlobalVariables();
+        //        _global.Token = _global.GenerateToken(data.Username, _appSettings.Key.ToString());
+        //        UsersModel item  = new UsersModel();
 
-            catch (Exception ex)
-            {
-                string status = ex.GetBaseException().ToString();
-            }
-             return Content(_global.Status);
-        }
+        //        _global.Status = gv.EmployeeRegistration(data, _global.Token, _context);
+        //    }
+
+        //    catch (Exception ex)
+        //    {
+        //        string status = ex.GetBaseException().ToString();
+        //    }
+        //     return Content(_global.Status);
+        //}
         [HttpPost]
         public async Task<IActionResult> SendOTP(RegistrationOTPModel data)
         {
@@ -462,7 +466,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
         }
   
         [HttpPost]
-        public IActionResult FinalUserRegistration(UsersModel data)
+        public IActionResult FinalUserRegistration(UserModel data)
         {
             
            
@@ -648,7 +652,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
 
         }
         [HttpPost]
-        public async Task<IActionResult> Import(List<UsersModel> list)
+        public async Task<IActionResult> Import(List<UserModel> list)
         {
             string result = "";
             try
@@ -824,7 +828,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
 
         }
         [HttpPost]
-        public async Task<IActionResult> UpdateUserInfo(UsersModel data)
+        public async Task<IActionResult> UpdateUserInfo(UserModel data)
         {
             string result="";
             try

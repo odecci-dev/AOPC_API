@@ -11,6 +11,8 @@ using Microsoft.Data.SqlClient;
 using System.Net;
 using System.Web.Http;
 using Newtonsoft.Json.Linq;
+using API.Models;
+using CMS.Models;
 
 namespace AuthSystem.Data.Class
 {
@@ -56,7 +58,7 @@ namespace AuthSystem.Data.Class
         #endregion
       
         #region Add Pre-Registration
-        public string EmployeeRegistration(UsersModel data, string token, ApplicationDbContext dbContext)
+        public string EmployeeRegistration(UserModel data, string token, ApplicationDbContext dbContext)
         {
        
             bool tblcount = dbContext.tbl_UsersModel.ToList().Count() > 0;
@@ -67,7 +69,7 @@ namespace AuthSystem.Data.Class
             }
             else
             {
-                var exist_EmployeeID = dbContext.tbl_UsersModel.Where(a => a.EmployeeID == data.EmployeeID).ToList().Count();
+                var exist_EmployeeID = dbContext.tbl_UsersModel2.Where(a => a.EmployeeID == data.EmployeeID).ToList().Count();
                 if (exist_EmployeeID == 0)
                 {
                     _global.Status = AddNewUser(data, token, dbContext);
@@ -84,10 +86,10 @@ namespace AuthSystem.Data.Class
 
             return _global.Status;
         }
-        public string AddNewUser(UsersModel data, string token, ApplicationDbContext dbContext)
+        public string AddNewUser(UserModel data, string token, ApplicationDbContext dbContext)
         {
             string EncryptPword = Cryptography.Encrypt(data.Password);
-            var model = new UsersModel()
+            var model = new UserModel()
             {
                 Username = data.Username,
                 Password = EncryptPword,
@@ -107,7 +109,7 @@ namespace AuthSystem.Data.Class
 
 
             };
-            dbContext.tbl_UsersModel.Add(model);
+            dbContext.tbl_UsersModel2.Add(model);
             dbContext.SaveChanges();
             _global.Status = "Successfully Saved.";
              //AudittrailLogIn(_global.Status, "User Registration Maintenance", data.Username, 7);
@@ -116,16 +118,16 @@ namespace AuthSystem.Data.Class
         #endregion
 
         #region UpdateUserInfo
-        public string EmployeeUpdateInfo(UsersModel data, string token, ApplicationDbContext dbContext)
+        public string EmployeeUpdateInfo(UserModel data, string token, ApplicationDbContext dbContext)
         {
             _global.Status = UpdateUser(data, token, dbContext);
 
             return _global.Status;
         }
-        public string UpdateUser(UsersModel data, string token, ApplicationDbContext dbContext)
+        public string UpdateUser(UserModel data, string token, ApplicationDbContext dbContext)
         {
             string EncryptPword = Cryptography.Encrypt(data.Password);
-            var model = new UsersModel()
+            var model = new UserModel()
             {
                 Username = data.Username,
                 Password = EncryptPword,
@@ -146,14 +148,14 @@ namespace AuthSystem.Data.Class
             };
             if (data.Id == 0)
             {
-                dbContext.tbl_UsersModel.Add(model);
+                dbContext.tbl_UsersModel2.Add(model);
                 _global.Status = "Successfully Saved New User";
                  //AudittrailLogIn(_global.Status, "User Registration Maintenance", data.Username, 7);
             }
             else
             {
                 model.Id = data.Id;
-                dbContext.tbl_UsersModel.Update(model);
+                dbContext.tbl_UsersModel2.Update(model);
                 _global.Status = "Successfully Updated User.";
                  //AudittrailLogIn(_global.Status, "User Registration Maintenance",data.Username, 7);
             }
