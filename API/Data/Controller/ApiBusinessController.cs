@@ -22,6 +22,7 @@ using System.Web.Http.Results;
 using static AuthSystem.Data.Controller.ApiVendorController;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Web;
+using System.Runtime.ConstrainedExecution;
 
 namespace AuthSystem.Data.Controller
 {
@@ -51,6 +52,7 @@ namespace AuthSystem.Data.Controller
         [HttpPost]
         public async Task<IActionResult> GetBusinessFByBID(BusinessIDVM data)
         {
+            int ctr = 0;
             var param = new IDataParameter[]
               {
                new SqlParameter("@BusinessID",data.BusinessID)
@@ -59,7 +61,39 @@ namespace AuthSystem.Data.Controller
             var item = new BusinessCardVM();
             foreach (DataRow dr in table.Rows)
             {
+                string gallery = "";
+                if (dr["Gallery"].ToString() != "")
+                {
 
+                  
+                    var gal = dr["Gallery"].ToString();
+                    string[] gallist = gal.Split(";");
+                    if (gallist.ToList().Count != 0)
+                    {
+                        gallery = dr["Gallery"].ToString().Remove(0, 1).Replace(";;", ";");
+                    }
+                    else
+                    {
+                        gallery = dr["Gallery"].ToString();
+                    }
+                    //foreach (string author in gallist)
+                    //{
+                    //    var items = new BusinessArray();
+                    //    if (author != "")
+                    //    {
+                    //        item.Id = ctr.ToString();
+                    //        item.Gallery = author;
+                    //        result.Add(item);
+                    //        ctr++;
+
+                    //    }
+
+                    //}
+                }
+                else
+                {
+                    gallery = dr["Gallery"].ToString();
+                }
                 item.Description = dr["Description"].ToString();
                 item.FeatureImg = dr["FeatureImg"].ToString();
                 item.Status = dr["Status"].ToString();
@@ -69,7 +103,7 @@ namespace AuthSystem.Data.Controller
                 item.Cno = dr["Cno"].ToString();
                 item.Email = dr["Email"].ToString();
                 item.Url = dr["Url"].ToString();
-                item.Gallery = dr["Gallery"].ToString();
+                item.Gallery = gallery;
                 item.FilePath = dr["FilePath"].ToString();
                 item.Map = dr["Map"].ToString();
 
@@ -95,11 +129,11 @@ namespace AuthSystem.Data.Controller
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
             {
-                var maps = System.Net.WebUtility.HtmlDecode(dr["Map"].ToString());
-                var maps_ = System.Net.WebUtility.HtmlEncode(dr["Map"].ToString());
+                //var maps = System.Net.WebUtility.HtmlDecode(dr["Map"].ToString());
+                //var maps_ = System.Net.WebUtility.HtmlEncode(dr["Map"].ToString());
                 var item = new BusinessModelVM();
                 item.Id = dr["Id"].ToString();
-                item.Map = maps_;
+                item.Map = dr["Map"].ToString();
                 item.FilePath = dr["FilePath"].ToString();
                 item.BusinessID = dr["BusinessID"].ToString();
                 item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
@@ -124,7 +158,51 @@ namespace AuthSystem.Data.Controller
 
             return Ok(result);
         }
-     
+        [HttpPost]
+        public async Task<IActionResult> BusinessFiltered(Bid data)
+        {
+            string sql = $@"SELECT        tbl_BusinessModel.Map, tbl_BusinessModel.FilePath, tbl_BusinessModel.BusinessID, tbl_BusinessModel.DateCreated, tbl_BusinessModel.Gallery, tbl_BusinessModel.FeatureImg, tbl_BusinessModel.Services, 
+                         tbl_BusinessModel.Url, tbl_BusinessModel.Email, tbl_BusinessModel.Cno, tbl_BusinessModel.Address, tbl_BusinessModel.Description, tbl_BusinessModel.BusinessName, tbl_BusinessModel.Id, 
+                         tbl_BusinessTypeModel.BusinessTypeName, tbl_BusinessLocationModel.Country, tbl_BusinessLocationModel.City, tbl_BusinessLocationModel.PostalCode, tbl_StatusModel.Name AS Status, 
+                         tbl_BusinessLocationModel.Id AS blocid, tbl_BusinessTypeModel.Id AS btypeid
+                        FROM            tbl_BusinessModel INNER JOIN
+                                                 tbl_BusinessTypeModel ON tbl_BusinessModel.TypeId = tbl_BusinessTypeModel.Id LEFT OUTER JOIN
+                                                 tbl_BusinessLocationModel ON tbl_BusinessModel.LocationId = tbl_BusinessLocationModel.Id LEFT OUTER JOIN
+                                                 tbl_StatusModel ON tbl_BusinessModel.Active = tbl_StatusModel.Id
+                        WHERE        (tbl_BusinessModel.Active = 5) and tbl_BusinessModel.Id ='"+data.id+"' ORDER BY tbl_BusinessModel.Id DESC";
+            var result = new List<BusinessModelVM>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+            foreach (DataRow dr in table.Rows)
+            {
+                //var maps = System.Net.WebUtility.HtmlDecode(dr["Map"].ToString());
+                //var maps_ = System.Net.WebUtility.HtmlEncode(dr["Map"].ToString());
+                var item = new BusinessModelVM();
+                item.Id = dr["Id"].ToString();
+                item.Map = dr["Map"].ToString() ;
+                item.FilePath = dr["FilePath"].ToString();
+                item.BusinessID = dr["BusinessID"].ToString();
+                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
+                item.Gallery = dr["Gallery"].ToString();
+                item.FeatureImg = dr["FeatureImg"].ToString();
+                item.Services = dr["Services"].ToString();
+                item.Url = dr["Url"].ToString();
+                item.Email = dr["Email"].ToString();
+                item.Cno = dr["Cno"].ToString();
+                item.Address = dr["Address"].ToString();
+                item.Description = dr["Description"].ToString();
+                item.BusinessName = dr["BusinessName"].ToString();
+                item.BusinessTypeName = dr["BusinessTypeName"].ToString();
+                item.Country = dr["Country"].ToString();
+                item.City = dr["City"].ToString();
+                item.PostalCode = dr["PostalCode"].ToString();
+                item.Status = dr["Status"].ToString();
+                item.blocid = dr["blocid"].ToString();
+                item.btypeid = dr["btypeid"].ToString();
+                result.Add(item);
+            }
+
+            return Ok(result);
+        }
         [HttpPost]
         public async Task<IActionResult> BusinessArrray(Bid data)
         {
@@ -135,6 +213,19 @@ namespace AuthSystem.Data.Controller
             var result = new List<BusinessArray>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
+            //foreach (DataRow dr in table.Rows)
+            //{
+            //    var gal = dr["Gallery"].ToString();
+            //    string[] gallist = gal.Split(";");
+            //    foreach (string author in gallist)
+            //    {
+            //        var item = new BusinessArray();
+            //        item.Id = ctr.ToString();
+            //        item.Gallery = author;
+            //        result.Add(item);
+            //        ctr++;
+            //    }
+            //}
             foreach (DataRow dr in table.Rows)
             {
                 var gal = dr["Gallery"].ToString();
@@ -142,10 +233,15 @@ namespace AuthSystem.Data.Controller
                 foreach (string author in gallist)
                 {
                     var item = new BusinessArray();
-                    item.Id = ctr.ToString();
-                    item.Gallery = author;
-                    result.Add(item);
-                    ctr++;
+                    if (author != "")
+                    {
+                        item.Id = ctr.ToString();
+                        item.Gallery = author;
+                        result.Add(item);
+                        ctr++;
+
+                    }
+
                 }
             }
             return Ok(result);
@@ -239,7 +335,7 @@ namespace AuthSystem.Data.Controller
                     {
                         query += $@"update  tbl_BusinessModel set BusinessName ='" + data.BusinessName + "', TypeId ='" + data.TypeId + "', LocationId ='" + data.LocationID + "', Description ='" + data.Description
                             + "', Address ='" + data.Address + "' , Cno ='" + data.Cno + "', Email ='" + data.Email + "', Url ='" + data.Url + "' , Services ='" + data.Services + "', FeatureImg ='"
-                            + FeaturedImage + "', Gallery ='' , Active ='5' ,FilePath ='' , Map ='" + data.Map + "'  where  Id='" + data.Id + "' ";
+                            + FeaturedImage + "', Gallery ='"+data.Gallery+"' , Active ='5' ,FilePath ='' , Map ='" + data.Map + "'  where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);
 
                         result = "Updated Successfully";

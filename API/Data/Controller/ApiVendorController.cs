@@ -33,6 +33,7 @@ namespace AuthSystem.Data.Controller
     public class ApiVendorController : ControllerBase
     {
         DbManager db = new DbManager();
+        DBMethods dbmet = new DBMethods();
         private readonly AppSettings _appSettings;
         private ApplicationDbContext _context;
         private ApiGlobalModel _global = new ApiGlobalModel();
@@ -61,7 +62,7 @@ namespace AuthSystem.Data.Controller
             foreach (DataRow dr in table.Rows)
             {
                 var gal = dr["Gallery"].ToString();
-                string[] gallist = gal.Split("%");
+                string[] gallist = gal.Split(";");
                 foreach (string author in gallist)
                 {
                     var item = new BusinessArray();
@@ -82,7 +83,76 @@ namespace AuthSystem.Data.Controller
         [HttpGet]
         public async Task<IActionResult> VendorList()
         {
-            string sql = $@"SELECT   tbl_VendorModel.VendorName, tbl_VendorModel.Description, tbl_VendorModel.Services, tbl_VendorModel.WebsiteUrl, tbl_VendorModel.FeatureImg, tbl_VendorModel.Gallery, tbl_VendorModel.Cno, tbl_VendorModel.Email, 
+            //            string sql = $@"SELECT   tbl_VendorModel.Id,tbl_VendorModel.VendorName, tbl_VendorModel.Description, tbl_VendorModel.Services, tbl_VendorModel.WebsiteUrl, tbl_VendorModel.FeatureImg, tbl_VendorModel.Gallery, tbl_VendorModel.Cno, tbl_VendorModel.Email, 
+            //                         tbl_VendorModel.VideoUrl, tbl_VendorModel.VrUrl, tbl_VendorModel.DateCreated, tbl_VendorModel.VendorID, tbl_VendorModel.FileUrl, tbl_VendorModel.Map, tbl_VendorModel.VendorLogo, 
+            //                         tbl_BusinessTypeModel.BusinessTypeName, tbl_BusinessLocationModel.Country, tbl_BusinessLocationModel.City, tbl_BusinessLocationModel.PostalCode, tbl_VendorModel.Address, tbl_VendorModel.Id, 
+            //                         tbl_BusinessModel.Address AS location, tbl_BusinessModel.BusinessName, tbl_StatusModel.Name AS Status, tbl_VendorModel.BusinessLocationID , tbl_VendorModel.BusinessTypeId
+            //FROM            tbl_VendorModel INNER JOIN
+            //                         tbl_BusinessTypeModel ON tbl_VendorModel.BusinessTypeId = tbl_BusinessTypeModel.Id LEFT OUTER JOIN
+            //                         tbl_BusinessModel ON tbl_BusinessTypeModel.Id = tbl_BusinessModel.TypeId LEFT OUTER JOIN
+            //                         tbl_BusinessLocationModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessLocationModel.Id LEFT OUTER JOIN
+            //                         tbl_StatusModel ON tbl_VendorModel.Status = tbl_StatusModel.Id
+            //WHERE        (tbl_VendorModel.Status = 5)
+            //ORDER BY tbl_VendorModel.Id DESC";
+            string sql = $@"SELECT   tbl_VendorModel.Id,tbl_VendorModel.VendorName, tbl_VendorModel.Description, tbl_VendorModel.Services, tbl_VendorModel.WebsiteUrl, tbl_VendorModel.FeatureImg, tbl_VendorModel.Gallery, tbl_VendorModel.Cno, tbl_VendorModel.Email, 
+                         tbl_VendorModel.VideoUrl, tbl_VendorModel.VrUrl, tbl_VendorModel.DateCreated, tbl_VendorModel.VendorID, tbl_VendorModel.FileUrl, tbl_VendorModel.Map, tbl_VendorModel.VendorLogo, 
+                         tbl_BusinessTypeModel.BusinessTypeName, tbl_BusinessLocationModel.Country, tbl_BusinessLocationModel.City, tbl_BusinessLocationModel.PostalCode, tbl_VendorModel.Address, tbl_VendorModel.Id, 
+                         tbl_BusinessLocationModel.City AS location,  tbl_StatusModel.Name AS Status, tbl_VendorModel.BusinessLocationID , tbl_VendorModel.BusinessTypeId
+FROM           tbl_VendorModel INNER JOIN
+                         tbl_BusinessTypeModel ON tbl_VendorModel.BusinessTypeId = tbl_BusinessTypeModel.Id LEFT OUTER JOIN
+                         tbl_BusinessLocationModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessLocationModel.Id LEFT OUTER JOIN
+                         tbl_StatusModel ON tbl_VendorModel.Status = tbl_StatusModel.Id  
+WHERE        (tbl_VendorModel.Status = 5)
+ORDER BY tbl_VendorModel.Id DESC";
+            var result = new List<VendorVM>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new VendorVM();
+                item.Id = dr["Id"].ToString();
+                item.VendorName = dr["VendorName"].ToString();
+                item.Description = dr["Description"].ToString();
+                item.Services = dr["Services"].ToString();
+                item.WebsiteUrl = dr["WebsiteUrl"].ToString();
+                item.FeatureImg = dr["FeatureImg"].ToString();
+                item.Gallery = dr["Gallery"].ToString();
+                item.Cno = dr["Cno"].ToString();
+                item.Email = dr["Email"].ToString();
+                item.VideoUrl = dr["VideoUrl"].ToString();
+                item.VrUrl = dr["VrUrl"].ToString();
+                item.VendorID = dr["VendorID"].ToString();
+                item.FileUrl = dr["FileUrl"].ToString();
+                item.Map = dr["Map"].ToString();
+                item.VendorLogo = dr["VendorLogo"].ToString();
+                item.BusinessTypeName = dr["BusinessTypeName"].ToString();
+                item.Country = dr["Country"].ToString();
+                item.City = dr["City"].ToString();
+                item.PostalCode = dr["PostalCode"].ToString();
+                //item.BusinessName = dr["BusinessName"].ToString();
+                item.Address = dr["Address"].ToString();
+                item.Id = dr["Id"].ToString();
+                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                item.Status = dr["Status"].ToString();
+                item.Vendorlocation = dr["location"].ToString();
+                item.BID = dr["BusinessLocationID"].ToString();
+                item.BtypeID = dr["BusinessTypeId"].ToString();
+
+                result.Add(item);
+            }
+            return Ok(result);
+        }
+        public class VendorIdModel
+        {
+            public string Id { get; set; }
+        }
+        public class VendorNameModel
+        {
+            public string VendorName { get; set; }
+        }
+        [HttpPost]
+        public async Task<IActionResult> VendorFilterbYId(VendorIdModel data)
+        {
+            string sql = $@"SELECT   tbl_VendorModel.Id,tbl_VendorModel.VendorName, tbl_VendorModel.Description, tbl_VendorModel.Services, tbl_VendorModel.WebsiteUrl, tbl_VendorModel.FeatureImg, tbl_VendorModel.Gallery, tbl_VendorModel.Cno, tbl_VendorModel.Email, 
                          tbl_VendorModel.VideoUrl, tbl_VendorModel.VrUrl, tbl_VendorModel.DateCreated, tbl_VendorModel.VendorID, tbl_VendorModel.FileUrl, tbl_VendorModel.Map, tbl_VendorModel.VendorLogo, 
                          tbl_BusinessTypeModel.BusinessTypeName, tbl_BusinessLocationModel.Country, tbl_BusinessLocationModel.City, tbl_BusinessLocationModel.PostalCode, tbl_VendorModel.Address, tbl_VendorModel.Id, 
                          tbl_BusinessModel.Address AS location, tbl_BusinessModel.BusinessName, tbl_StatusModel.Name AS Status, tbl_VendorModel.BusinessLocationID , tbl_VendorModel.BusinessTypeId
@@ -91,13 +161,13 @@ FROM            tbl_VendorModel INNER JOIN
                          tbl_BusinessModel ON tbl_BusinessTypeModel.Id = tbl_BusinessModel.TypeId LEFT OUTER JOIN
                          tbl_BusinessLocationModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessLocationModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON tbl_VendorModel.Status = tbl_StatusModel.Id
-WHERE        (tbl_VendorModel.Status = 5)
-ORDER BY tbl_VendorModel.Id DESC";
+WHERE        (tbl_VendorModel.Status = 5) and tbl_VendorModel.Id='"+data.Id+"' ORDER BY tbl_VendorModel.Id DESC";
             var result = new List<VendorVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
             {
                 var item = new VendorVM();
+                item.Id = dr["Id"].ToString();
                 item.VendorName = dr["VendorName"].ToString();
                 item.Description = dr["Description"].ToString();
                 item.Services = dr["Services"].ToString();
@@ -128,7 +198,13 @@ ORDER BY tbl_VendorModel.Id DESC";
                 result.Add(item);
             }
             return Ok(result);
-        }  
+        }
+        [HttpPost]
+        public async Task<IActionResult> VendorSearch(VendorNameModel data)
+        {
+            var result = dbmet.GetVendorDetails().Where(a => a.VendorName.ToUpper().Contains(data.VendorName.ToUpper())).ToList(); 
+            return Ok(result);
+        }
         [HttpPost]
         public async Task<IActionResult> VendorListFilterByVID(VendorIDVM data)
         {
@@ -275,7 +351,7 @@ FROM            tbl_VendorModel INNER JOIN
                     }
                     else
                     {
-                        FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.FeatureImg.Replace(" ", "%20"); ;
+                        FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.FeatureImg.Replace("'", "''").Replace(" ", "%20"); ;
                     }
                     if (data.VendorLogo == null)
                     {
@@ -283,7 +359,7 @@ FROM            tbl_VendorModel INNER JOIN
                     }
                     else
                     {
-                        Logo = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.VendorLogo.Replace(" ", "%20"); ;
+                        Logo = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.VendorLogo.Replace("'", "''").Replace(" ", "%20"); ;
                     }
                     description = data.Description.Replace("'", "''");
                     services = data.Services == null? "" : data.Services.Replace("'", "''");
@@ -350,7 +426,7 @@ FROM            tbl_VendorModel INNER JOIN
                     else
                     {
                          query += $@"update  tbl_VendorModel set VendorName='" + data.VendorName.Replace("'", "''") + "' , BusinessTypeId='" + data.BusinessTypeId + "' , Description='" + data.Description.Replace("'", "''") + "' , Services='" + services
-                            + "' , WebsiteUrl='" + data.WebsiteUrl + "' , FeatureImg='" + FeaturedImage + "' , Gallery='" + data.Gallery + "' , Cno='" + data.Cno + "', Email='" + data.Email + "', VideoUrl='"
+                            + "' , WebsiteUrl='" + data.WebsiteUrl + "' , FeatureImg='" + FeaturedImage + "' , Gallery='" + data.Gallery.Replace("'","''").Replace(" ","%20") + "' , Cno='" + data.Cno + "', Email='" + data.Email + "', VideoUrl='"
                             + data.VideoUrl + "' , VrUrl='" + data.VrUrl + "'  , BusinessLocationID='" + data.BusinessLocationID + "' , Status='5' , FileUrl='" + data.FileUrl
                             + "' , Map='" + data.Map + "' , VendorLogo='" + Logo + "' , Address='" + data.Address.Replace("'", "''") + "'  where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query); 

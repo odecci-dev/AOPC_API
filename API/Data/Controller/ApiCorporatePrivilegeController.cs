@@ -35,11 +35,11 @@ namespace AuthSystem.Data.Controller
 
         public ApiCorporatePrivilegeController(ApplicationDbContext context)
         {
-   
+
             _context = context;
 
         }
-  
+
 
         [HttpGet]
         public async Task<IActionResult> CorporatePrivilegeLsit()
@@ -56,14 +56,14 @@ namespace AuthSystem.Data.Controller
                 item.Businessname = dr["Businessname"].ToString();
                 item.Vendorname = dr["Vendorname"].ToString();
                 item.Corporatename = dr["Corporatename"].ToString();
-                item.Privilegename = dr["Privilegename"].ToString() ;
+                item.Privilegename = dr["Privilegename"].ToString();
                 item.Country = dr["Country"].ToString();
                 item.Businesstype = dr["Businesstypename"].ToString();
                 item.NoOfVisit = int.Parse(dr["No_Of_visit"].ToString());
                 result.Add(item);
             }
-             
-                return Ok(result);
+
+            return Ok(result);
         }
         public class PrivCorp
         {
@@ -181,7 +181,7 @@ namespace AuthSystem.Data.Controller
                     result.Add(item);
 
                 }
-        
+
 
             }
             return Ok(result);
@@ -207,7 +207,7 @@ namespace AuthSystem.Data.Controller
                     {
                         if (emp.stats == "1")
                         {
-                        
+
 
                             string insert = $@"insert into tbl_CorporatePrivilegeTierModel (PrivilegeID,CorporateID,Count,VipCount) values 
                                              ('" + emp.privilegeID + "','" + emp.CorporateID + "','" + emp.usercount + "','" + emp.vipcount + "')";
@@ -249,14 +249,14 @@ namespace AuthSystem.Data.Controller
                     {
                         if (emp.stats == "1")
                         {
-                            
+
                             string Update = $@"UPDATE [dbo].[tbl_CorporatePrivilegeTierModel]
                                            SET [isVIP] = '" + emp.stats + "' " +
-                                         "WHERE PrivilegeID ='"+ emp.privilegeID + "' and CorporateID='"+ emp.CorporateID + "' ";
+                                         "WHERE PrivilegeID ='" + emp.privilegeID + "' and CorporateID='" + emp.CorporateID + "' ";
                             db.AUIDB_WithParam(Update);
 
                         }
-                     
+
                     }
                     else
                     {

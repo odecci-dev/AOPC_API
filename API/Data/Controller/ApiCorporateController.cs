@@ -383,7 +383,7 @@ WHERE        (tbl_CorporateModel.Status = 1)";
             var result = new Registerstats();
             if (dt.Rows.Count > 0)
             {
-                string sql1 = $@"select * from UsersModel where CorporateID ='" + data.Id + "'";
+                string sql1 = $@"select * from UsersModel where CorporateID ='" + data.Id + "' and  Active='5' ";
                 DataTable dt1 = db.SelectDb(sql1).Tables[0];
                 if (dt1.Rows.Count == 0)
                 {

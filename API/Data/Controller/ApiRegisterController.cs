@@ -485,7 +485,8 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
 
                     string query = $@"update  UsersModel set Username='"+data.Username+"',Password='"+EncryptPword+"', Fname='"+data.Fname+"',Lname='"+data.Lname+"',cno='"+data.Cno+"', Active=10 , Address ='"+data.Address+"' where  Id='" + dt.Rows[0]["Id"].ToString() +"' ";
                     db.AUIDB_WithParam(query);
-                string message = "Welcome to Alfardan Oyster Privilege Application to confirm your registration here's your one time password " + data.OTP + ". Please do not share.";
+                string message = "Welcome to the Alfardan Oyster Privilege Club Application to confirm your registration. Here’s your one-time password " + data.OTP + ".. Please do not share.";
+                //string message = "Welcome to Alfardan Oyster Privilege Application to confirm your registration here's your one time password " + data.OTP + ". Please do not share.";
                 string username = "Carlo26378";
                 string password = "d35HV7kqQ8Hsf24";
                 string sid = "Oyster Club";
@@ -582,7 +583,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
         {
 
 
-            string sql = $@"select * from usersmodel where EmployeeID='"+data.EmployeeID+"'";
+            string sql = $@"select * from usersmodel where EmployeeID='"+data.EmployeeID+"' ";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new Registerstats();
             if (dt.Rows.Count > 0)
@@ -785,13 +786,13 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
         public IActionResult DeletePosition(DeletePos data)
         {
 
-            string sql = $@"select * from tbl_PositionModel where id ='" + data.Id + "'";
+            string sql = $@"select * from tbl_PositionModel where id ='" + data.Id + "' ";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new Registerstats();
             string imgfile = "";
             if (dt.Rows.Count != 0)
             {
-                string sql1 = $@"select * from UsersModel where PositionID ='" + data.Id + "'";
+                string sql1 = $@"select * from UsersModel where PositionID ='" + data.Id + "' and Status <> 6";
                 DataTable dt1 = db.SelectDb(sql1).Tables[0];
                 if (dt1.Rows.Count == 0)
                 {
@@ -884,7 +885,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                     {
                         string sql1 = $@"select * from usersmodel where Username ='" + data.Username + "' and Active <> 6 ";
                         DataTable dt1 = db.SelectDb(sql1).Tables[0];
-                        string sql = $@"select * from usersmodel where EmployeeID='" + data.EmployeeID + "' and Active <> 6  ";
+                        string sql = $@"select * from usersmodel where EmployeeID='" + data.EmployeeID + "' and Active <> 6  and  CorporateID ='"+data.CorporateID+ "' and Email='"+data.Email+"' and Username ='"+data.Username+"'";
                         DataTable dt = db.SelectDb(sql).Tables[0];
                         if (dt1.Rows.Count != 0)
                         {
@@ -936,7 +937,26 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                             }
                             else
                             {
-                                result = "User Information Already Used!";
+                                string username = $@"select from UsersModel where Username ='" + data.Username + "' and Status <> 6";
+                                DataTable username_dt = db.SelectDb(username).Tables[0];
+                                string email = $@"select from UsersModel where Email ='" + data.Email + "' and Status <> 6";
+                                DataTable dt_email = db.SelectDb(email).Tables[0]; 
+                                string empid = $@"select from UsersModel where Email ='" + data.Email + "' and Status <> 6";
+                                DataTable dt_empid = db.SelectDb(empid).Tables[0];
+                                if (username_dt.Rows.Count !=0)
+                                {
+                                    result = "Username is Already Used and Active!";
+                                }
+                                else if (dt_email.Rows.Count != 0)
+                                {
+                                    result = "Email is Already Used and Active!";
+                                }
+                                else if(dt_empid.Rows.Count != 0)
+                                {
+                                    result = "EmployeeID is Already Used and Active!";
+                                }
+
+             
                             }
                         }
                     }
@@ -951,8 +971,8 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                         {
                             password = "";
                         }
-                        query += $@"update  UsersModel set Fname='" + data.Fname + "',Lname='" + data.Lname + "',Password='" + password + "' ,Username='" + data.Username + "'" +
-                               ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' , PositionID='" + data.PositionID + "'" +
+                        query += $@"update  UsersModel set Fname='" + data.Fname + "',Lname='" + data.Lname + "',Username='" + data.Username + "'" +
+                               ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' ,isVIP='"+data.isVIP+"', PositionID='" + data.PositionID + "'" +
                                ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='" + data.EmployeeID + "' " +
                                "where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);
@@ -976,7 +996,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
             {
                 return BadRequest(result);
             }
-            return Ok(result);
+       
         }
 
         public class ChangePW

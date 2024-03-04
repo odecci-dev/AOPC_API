@@ -14,6 +14,7 @@ using System.IO;
 using AuthSystem.Data;
 using AuthSystem.Data.Class;
 using AuthSystem.ViewModel;
+using static AuthSystem.Data.Controller.ApiCorporatePrivilegeController;
 
 namespace AuthSystem.Data.Controller
 {
@@ -36,7 +37,134 @@ namespace AuthSystem.Data.Controller
             _context = context;
    
         }
-      
+        public class PrivVendListItem
+        {
+            public string? Id { get; set; }
+            public string? VendorName { get; set; }
+            public string? PrivilegeID { get; set; }
+            public string? vid { get; set; }
+            public string? stats { get; set; }
+
+        }
+        public class VenIDs
+        {
+            public string Id { get; set; }
+            //public string? vid { get; set; }
+
+        }
+
+        [HttpPost]
+        public IActionResult SaveVendorePrivilegeList(List<PrivVendListItem> IdList)
+        {
+            string delete = $@"delete tbl_VendorPrivilegeTierModel where PrivilegeID='" + IdList[0].PrivilegeID + "'";
+            db.AUIDB_WithParam(delete);
+            var result = new Registerstats();
+            string imgfile = "";
+
+            foreach (var emp in IdList)
+            {
+                if (emp.vid != null)
+                {
+                    string sql = $@"SELECT      PrivilegeID, VendorID, isVIP
+                                FROM           tbl_VendorPrivilegeTierModel
+                        WHERE        (PrivilegeID = '" + emp.PrivilegeID + "')  and VendorID='" + emp.vid +"'";
+                    DataTable dt = db.SelectDb(sql).Tables[0];
+                    if (dt.Rows.Count == 0)
+                    {
+                        if (emp.stats == "1")
+                        {
+
+
+                            string insert = $@"insert into tbl_VendorPrivilegeTierModel (PrivilegeID,VendorID) values 
+                                             ('" + emp.PrivilegeID + "','" + emp.vid + "')";
+                            db.AUIDB_WithParam(insert);
+
+                        }
+
+                    }
+                    else
+                    {
+
+
+                    }
+                }
+                result.Status = "Successfully Added";
+
+            }
+
+            return Ok(result);
+        }
+        [HttpPost]
+        public async Task<IActionResult> PrivilegeVendorList(VenIDs data)
+        {
+
+            var result = new List<PrivVendListItem>();
+            var stats = "";
+            var isvip = "";
+            var vid = "";
+            string sql2 = $@"select Id,VendorName from tbl_VendorModel where Status=5";
+            DataTable dt2 = db.SelectDb(sql2).Tables[0];
+
+            foreach (DataRow dr in dt2.Rows)
+            {
+                string sqls = $@"SELECT       PrivilegeID, VendorID, isVIP
+                                FROM            tbl_VendorPrivilegeTierModel
+                                WHERE        (PrivilegeID = '" + data.Id + "') ";
+                DataTable dts = db.SelectDb(sqls).Tables[0];
+
+                if (dts.Rows.Count == 0)
+                {
+
+                    string vendor_sql = $@"SELECT      PrivilegeID, VendorID, isVIP
+                                FROM           tbl_VendorPrivilegeTierModel
+                                WHERE        (VendorID = '" + dr["Id"].ToString() + "')  and    (PrivilegeID = '" + data.Id + "') ";
+                    DataTable dt_ = db.SelectDb(vendor_sql).Tables[0];
+                    if (dt_.Rows.Count != 0)
+                    {
+                        stats = "1";
+                        isvip = "0";
+
+                    }
+                    else
+                    {
+                        stats = "0";
+                        isvip = "0";
+                    }
+                    var item = new PrivVendListItem();
+                    item.VendorName = dr["VendorName"].ToString();
+                    item.vid = dr["Id"].ToString();
+                    item.stats = stats;
+                    result.Add(item);
+                }
+                else
+                {
+                    string sql = $@"SELECT      PrivilegeID, VendorID, isVIP
+                                FROM           tbl_VendorPrivilegeTierModel
+                        WHERE        (PrivilegeID = '" + data.Id + "') and  VendorID='"+dr["Id"].ToString()+"'";
+                    DataTable dt = db.SelectDb(sql).Tables[0];
+
+                    if (dt.Rows.Count != 0)
+                    {
+                        stats = "1";
+                        isvip = dt.Rows[0]["isVIP"].ToString();
+                    }
+                    else
+                    {
+                        stats = "0";
+                        isvip = "0";
+                    }
+                    var item = new PrivVendListItem();
+                    item.VendorName = dr["VendorName"].ToString();
+                    item.vid = dr["Id"].ToString();
+                    item.stats = stats;
+                    result.Add(item);
+
+                }
+
+
+            }
+            return Ok(result);
+        }
         [HttpGet]
         public async Task<IActionResult> MembershipList()
         {

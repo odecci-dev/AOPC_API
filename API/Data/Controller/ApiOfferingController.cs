@@ -182,93 +182,98 @@ namespace AuthSystem.Data.Controller
                 //all
                 DataTable table = db.SelectDb_SP("SP_OfferingList").Tables[0];
          
-            foreach (DataRow dr in table.Rows)
-            {
-                var item = new OfferingVM();
-                item.Id= int.Parse(dr["Id"].ToString());
-                item.BusinessTypeName=dr["BusinessTypeName"].ToString();
-                item.VendorName= dr["VendorName"].ToString();
-                item.PromoReleaseText= dr["PromoReleaseText"].ToString();
-                item.OfferingName=dr["OfferingName"].ToString();
-                item.MembershipName=dr["MembershipName"].ToString();
-                item.VendorID= dr["VendorID"].ToString();
-                item.ImgUrl= dr["ImgUrl"].ToString();
-                item.OfferingID= dr["OfferingID"].ToString();
-                item.Status= dr["Status"].ToString();
+                foreach (DataRow dr in table.Rows)
+                {
+                    var item = new OfferingVM();
+                    item.Id= int.Parse(dr["Id"].ToString());
+                    item.BusinessTypeName=dr["BusinessTypeName"].ToString();
+                    item.VendorName= dr["VendorName"].ToString();
+                    item.PromoReleaseText= dr["PromoReleaseText"].ToString();
+                    item.OfferingName=dr["OfferingName"].ToString();
+                    item.MembershipName=dr["MembershipName"].ToString();
+                    item.VendorID= dr["VendorID"].ToString();
+                    item.ImgUrl= dr["ImgUrl"].ToString();
+                    item.OfferingID= dr["OfferingID"].ToString();
+                    item.Status= dr["Status"].ToString();
           
-                result.Add(item);
-            }
+                    result.Add(item);
+                }
 
-            return Ok(result);
+                return Ok(result);
             }
             else
             {
                 //get filter with id
-                string sqls = $@"select Name from tbl_MembershipModel where Status = 5 ";
+                string sqls = $@"select Name from tbl_MembershipModel inner JOIN
+tbl_CorporateModel on tbl_CorporateModel.MembershipID = tbl_MembershipModel.Id inner JOIN
+UsersModel on tbl_CorporateModel.Id = UsersModel.CorporateID
+
+where tbl_MembershipModel.Status = 5 and UsersModel.Id = '"+id+"'";
                 DataTable tables = db.SelectDb(sqls).Tables[0];
            
                 foreach (DataRow dr in tables.Rows)
                 {
               
-                    var item = new OfferingVM();
+                  
                     switch (dr["Name"].ToString())
                     {
                         case "BRONZE":
                             sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID, tbl_UserMembershipModel.UserID
-                        FROM            tbl_OfferingModel INNER JOIN
-                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id INNER JOIN
-                         tbl_UserMembershipModel ON tbl_MembershipModel.Id = tbl_UserMembershipModel.MembershipID
-                        WHERE        (tbl_OfferingModel.StatusID = 5) and tbl_MembershipModel.Name = 'BRONZE' and (tbl_UserMembershipModel.UserID = '"+id+"') ";
+                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
+                        FROM            tbl_OfferingModel left JOIN
+                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id left JOIN
+                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id LEFT JOIN
+                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id left JOIN
+                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id 
+                     
+                        WHERE        (tbl_OfferingModel.StatusID = 5)   and tbl_MembershipModel.Name in ('BRONZE') ";
 
                             break;
                         case "SILVER":
                             sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID, tbl_UserMembershipModel.UserID
-                        FROM            tbl_OfferingModel INNER JOIN
-                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id INNER JOIN
-                         tbl_UserMembershipModel ON tbl_MembershipModel.Id = tbl_UserMembershipModel.MembershipID
-                        WHERE        (tbl_OfferingModel.StatusID = 5) and tbl_MembershipModel.Name in ('BRONZE','SILVER') and (tbl_UserMembershipModel.UserID = '" +id+"')";
+                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
+                        FROM            tbl_OfferingModel left JOIN
+                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id left JOIN
+                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id LEFT JOIN
+                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id left JOIN
+                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id 
+                     
+                        WHERE        (tbl_OfferingModel.StatusID = 5)   and tbl_MembershipModel.Name in ('BRONZE','SILVER')";
                             break;
                         case "GOLD":
                             sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID, tbl_UserMembershipModel.UserID
-                        FROM            tbl_OfferingModel INNER JOIN
-                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id INNER JOIN
-                         tbl_UserMembershipModel ON tbl_MembershipModel.Id = tbl_UserMembershipModel.MembershipID
-                        WHERE        (tbl_OfferingModel.StatusID = 5) and tbl_MembershipModel.Name in ('BRONZE','SILVER','GOLD') and (tbl_UserMembershipModel.UserID = '" +id+"')";
+                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
+                        FROM            tbl_OfferingModel left JOIN
+                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id left JOIN
+                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id LEFT JOIN
+                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id left JOIN
+                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id 
+                     
+                        WHERE        (tbl_OfferingModel.StatusID = 5)   and tbl_MembershipModel.Name in ('BRONZE','SILVER','GOLD')";
                             break;
                         case "PLATINUM":
                             sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID, tbl_UserMembershipModel.UserID
-                        FROM            tbl_OfferingModel INNER JOIN
-                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id INNER JOIN
-                         tbl_UserMembershipModel ON tbl_MembershipModel.Id = tbl_UserMembershipModel.MembershipID
-                        WHERE        (tbl_OfferingModel.StatusID = 5) and tbl_MembershipModel.Name in ('BRONZE','SILVER','GOLD','PLATINUM') and (tbl_UserMembershipModel.UserID = '" +id+"')";
+                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
+                        FROM            tbl_OfferingModel left JOIN
+                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id left JOIN
+                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id LEFT JOIN
+                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id left JOIN
+                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id 
+                     
+                        WHERE        (tbl_OfferingModel.StatusID = 5)   and tbl_MembershipModel.Name in ('BRONZE','SILVER','GOLD','PLATINUM')";
                             break;
-                        case "EXCLUSIVE ":
+                        case "EXCLUSIVE":
 
-                            sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-                         tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID, tbl_UserMembershipModel.UserID
-                        FROM            tbl_OfferingModel INNER JOIN
-                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id INNER JOIN
-                         tbl_UserMembershipModel ON tbl_MembershipModel.Id = tbl_UserMembershipModel.MembershipID
-                        WHERE        (tbl_OfferingModel.StatusID = 5) and (tbl_UserMembershipModel.UserID = '" +id+"')";
+                            sql = $@"
+            SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
+                                     tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
+                                    FROM            tbl_OfferingModel left JOIN
+                                     tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id left JOIN
+                                     tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id LEFT JOIN
+                                     tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id left JOIN
+                                     tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id 
+                     
+                        WHERE        (tbl_OfferingModel.StatusID = 5)   ";
 
                             break;
 
@@ -278,6 +283,7 @@ namespace AuthSystem.Data.Controller
                     DataTable dt = db.SelectDb(sql).Tables[0];
                     foreach (DataRow dr_ in dt.Rows)
                     {
+                        var item = new OfferingVM();
                         item.Id = int.Parse(dr_["Id"].ToString());
                         item.BusinessTypeName = dr_["BusinessTypeName"].ToString();
                         item.VendorName = dr_["VendorName"].ToString();
@@ -586,7 +592,7 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             }
             if (dt.Rows.Count == 0)
             {
-                sql = $@"select * from tbl_OfferingModel where OfferingName='" + data.OfferingName + "' and StatusID = 5";
+                sql = $@"select * from tbl_OfferingModel where OfferingName='" + data.OfferingName.Replace("'","''") + "' and StatusID = 5";
                 DataTable dt2 = db.SelectDb(sql).Tables[0];
                 if (dt2.Rows.Count  != 0)
                 {
@@ -600,7 +606,7 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
                     {
                        
                             string Insert = $@"insert into tbl_OfferingModel (VendorID,MembershipID,BusinessTypeID,OfferingName,PromoDesc,PromoReleaseText,ImgUrl,StatusID,PrivilegeID,Url,OfferDays,StartDate,EndDate,FromTime,ToTime) values 
-                                   ('" + data.VendorID + "','10','" + data.BusinessTypeID + "','" + data.OfferingName + "','" + data.PromoDesc + "','" + data.PromoReleaseText + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
+                                   ('" + data.VendorID + "','10','" + data.BusinessTypeID + "','" + data.OfferingName.Replace("'", "''") + "','" + data.PromoDesc.Replace("'", "''") + "','" + data.PromoReleaseText + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
                                    ",'" + data.URL + "','" + data.Offerdays + "','" + data.StartDateTime + "','" + data.EndDateTime + "','" + data.FromTime + "','" + data.ToTime + "')";
                            db.AUIDB_WithParam(Insert);
                         
@@ -608,7 +614,7 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
                     else
                     {
                         string Insert = $@"insert into tbl_OfferingModel (VendorID,MembershipID,BusinessTypeID,OfferingName,PromoDesc,PromoReleaseText,ImgUrl,StatusID,PrivilegeID,Url,OfferDays,StartDate,EndDate,FromTime,ToTime) values 
-                                   ('" + data.VendorID + "','" + data.MembershipID + "','" + data.BusinessTypeID + "','" + data.OfferingName + "','" + data.PromoDesc + "','" + data.EndDateTime + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
+                                   ('" + data.VendorID + "','" + data.MembershipID + "','" + data.BusinessTypeID + "','" + data.OfferingName.Replace("'", "''") + "','" + data.PromoDesc.Replace("'", "''") + "','" + data.EndDateTime + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
                                     ",'" + data.URL + "','" + data.Offerdays + "','" + data.StartDateTime + "','" + data.EndDateTime + "','" + data.FromTime + "','" + data.ToTime + "')";
                         db.AUIDB_WithParam(Insert);
                   
@@ -625,8 +631,8 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             {
                 if (data.MembershipID == "ALL")
                 {
-                    string OTPInsert = $@"update tbl_OfferingModel set VendorID='" + data.VendorID + "' ,MembershipID='10' ,BusinessTypeID='" + data.BusinessTypeID + "' ,OfferingName='" + data.OfferingName + "' ,PromoDesc='"
-                + data.PromoDesc + "' ,PromoReleaseText='" + data.EndDateTime + "' ,ImgUrl='" + FeaturedImage + "' ,StatusID='5' ,PrivilegeID='' ,Url='" + data.URL + "' ,OfferDays='" + data.Offerdays + "' ,StartDate='"
+                    string OTPInsert = $@"update tbl_OfferingModel set VendorID='" + data.VendorID + "' ,MembershipID='10' ,BusinessTypeID='" + data.BusinessTypeID + "' ,OfferingName='" + data.OfferingName.Replace("'", "''") + "' ,PromoDesc='"
+                + data.PromoDesc.Replace("'", "''") + "' ,PromoReleaseText='" + data.EndDateTime + "' ,ImgUrl='" + FeaturedImage + "' ,StatusID='5' ,PrivilegeID='' ,Url='" + data.URL + "' ,OfferDays='" + data.Offerdays + "' ,StartDate='"
                 + data.StartDateTime + "' ,EndDate='" + data.EndDateTime + "' ,FromTime='" + data.FromTime + "' ,ToTime='" + data.ToTime + "'  where id =" + data.Id + "";
                     db.AUIDB_WithParam(OTPInsert);
                     result.Status = "Successfully Updated";
@@ -635,8 +641,8 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
                 }
                 else
                 {
-                    string OTPInsert = $@"update tbl_OfferingModel set VendorID='" + data.VendorID + "' ,MembershipID='" + data.MembershipID + "' ,BusinessTypeID='" + data.BusinessTypeID + "' ,OfferingName='" + data.OfferingName + "' ,PromoDesc='"
-                    + data.PromoDesc + "' ,PromoReleaseText='" + data.EndDateTime + "' ,ImgUrl='" + FeaturedImage + "' ,StatusID='5' ,PrivilegeID='' ,Url='" + data.URL + "' ,OfferDays='" + data.Offerdays + "' ,StartDate='"
+                    string OTPInsert = $@"update tbl_OfferingModel set VendorID='" + data.VendorID + "' ,MembershipID='" + data.MembershipID + "' ,BusinessTypeID='" + data.BusinessTypeID + "' ,OfferingName='" + data.OfferingName.Replace("'", "''") + "' ,PromoDesc='"
+                    + data.PromoDesc.Replace("'", "''") + "' ,PromoReleaseText='" + data.EndDateTime + "' ,ImgUrl='" + FeaturedImage + "' ,StatusID='5' ,PrivilegeID='' ,Url='" + data.URL + "' ,OfferDays='" + data.Offerdays + "' ,StartDate='"
                     + data.StartDateTime + "' ,EndDate='" + data.EndDateTime + "' ,FromTime='" + data.FromTime + "' ,ToTime='" + data.ToTime + "'  where id =" + data.Id + "";
                     db.AUIDB_WithParam(OTPInsert);
                     result.Status = "Successfully Updated";

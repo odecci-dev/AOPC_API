@@ -78,7 +78,7 @@ namespace AuthSystem.Data.Controller
                     DataTable table = db.SelectDb(sql1).Tables[0];
                 foreach (DataRow dr in table.Rows)
                 {
-                    string sql = $@"SELECT  * from UsersModel where EmployeeID='" + dr["EmployeeID"].ToString() + "'";
+                    string sql = $@"SELECT  * from UsersModel where EmployeeID='" + dr["EmployeeID"].ToString() + "' WHERE active=1";
                     DataTable dt = db.SelectDb(sql).Tables[0];
                     if (dt.Rows.Count != 0)
                     {
@@ -109,7 +109,7 @@ namespace AuthSystem.Data.Controller
         {
             string sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated,Module,ItemID,EmailStatus
                             FROM            tbl_NotificationModel
-                            WHERE        (EmployeeID = '" +data.EmployeeID + "') order by id desc";
+                            WHERE        (EmployeeID = '" +data.EmployeeID + "')  and tbl_NotificationModel.isRead = 0  order by id desc";
             var result = new List<NotificationModel>();
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
@@ -137,10 +137,10 @@ namespace AuthSystem.Data.Controller
             {
                 foreach (DataRow dt in table.Rows)
                 {
-                    delete += $@" update tbl_NotificationModel set isRead ='1'  where id='" + dt["Id"].ToString() + "' and EmployeeID='" + data.EmployeeID + "'";
+                    delete += $@" update tbl_NotificationModel set isRead ='1'  where EmployeeID='" + data.EmployeeID + "'";
                 }
-                db.AUIDB_WithParam(delete); 
-                return Ok("Deleted");
+                 
+                return Ok(db.AUIDB_WithParam(delete) + " Marked Read All");
             }
             else
             {
@@ -157,8 +157,8 @@ namespace AuthSystem.Data.Controller
             if (table.Rows.Count != 0)
             {
                 string Insert = $@" update tbl_NotificationModel set isRead ='1'  where id='" + data.id + "' and EmployeeID='" + data.EmployeeID + "'";
-                db.AUIDB_WithParam(Insert);
-                return Ok("Deleted");
+                
+                return Ok(db.AUIDB_WithParam(Insert) +" Read");
             }
             else
             {
@@ -173,7 +173,7 @@ namespace AuthSystem.Data.Controller
             string sql = $@"SELECT        tbl_NotificationModel.Details, tbl_NotificationModel.isRead, tbl_NotificationModel.DateCreated,Concat(UsersModel.Fname,' ', UsersModel.Lname) as Fullname, tbl_NotificationModel.Id, tbl_NotificationModel.EmployeeID, tbl_NotificationModel.Module, tbl_NotificationModel.ItemID, 
                          tbl_NotificationModel.EmailStatus
                          FROM            tbl_NotificationModel INNER JOIN
-                         UsersModel ON tbl_NotificationModel.EmployeeID = UsersModel.EmployeeID order by id desc";
+                         UsersModel ON tbl_NotificationModel.EmployeeID = UsersModel.EmployeeID order by id desc ";
             var result = new List<NotificationVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 

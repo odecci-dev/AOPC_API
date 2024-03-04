@@ -15,8 +15,8 @@ using AuthSystem.Data;
 using AuthSystem.Data.Class;
 using AuthSystem.ViewModel;
 using Microsoft.Data.SqlClient;
-using static AuthSystem.Data.Controller.ApiRegisterController;
 using System.Collections;
+using static AuthSystem.Data.Controller.ApiAdminAcessController;
 
 namespace AuthSystem.Data.Controller
 {
@@ -82,13 +82,26 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
             var result = new List<PrivilegeVM>();
             foreach (DataRow dr in dt.Rows)
             {
+
+                string mecha = dr["Mechanics"].ToString();
+                string tmc = dr["TMC"].ToString();
+                if (!string.IsNullOrEmpty(mecha))
+                {
+                    string newString = mecha.Substring(0, mecha.Length - 1);
+
+                }
+                if (!string.IsNullOrEmpty(tmc))
+                {
+                    string newString = tmc.Substring(0, tmc.Length - 1);
+
+                }
                 var item = new PrivilegeVM();
                 item.Id = int.Parse(dr["Id"].ToString());
                 item.Title = dr["Title"].ToString();
                 item.Description = dr["Description"].ToString();
                 item.Validity =Convert.ToDateTime( dr["Validity"].ToString()).ToString("MM-dd-yyyy");
                 item.noExpiry = int.Parse(dr["noExpiry"].ToString());
-                item.ImgUrl = dr["ImgUrl"].ToString();
+                item.ImgUrl = dr["ImgUrl"].ToString().Replace(" ","");
                 item.PrivilegeID = dr["PrivilegeID"].ToString();
                 item.isVIP = int.Parse(dr["isVIP"].ToString());
                 item.TMC = dr["TMC"].ToString();
@@ -183,6 +196,28 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
 
             return Ok(result);
         }
+        static string RemoveLastSpecialChars(string inputStr)
+        {
+            int lastSpecialIndex = -1;
+
+            for (int i = inputStr.Length - 1; i >= 0; i--)
+            {
+                if (!char.IsLetterOrDigit(inputStr[i]))
+                {
+                    lastSpecialIndex = i;
+                    break;
+                }
+            }
+
+            if (lastSpecialIndex != -1)
+            {
+                // Remove all occurrences of the last special character
+                inputStr = inputStr.Remove(lastSpecialIndex, 1);
+                return RemoveLastSpecialChars(inputStr);
+            }
+
+            return inputStr;
+        }
         [HttpPost]
         public async Task<IActionResult> GetPrivilegeByPID(PrivilegeIDVM data)
         {
@@ -194,16 +229,61 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
             var item = new PrivilegeFIDVM();
             foreach (DataRow dr in table.Rows)
             {
-    
-                
+
+                //string mecha = RemoveLastSpecialChars(dr["Mechanics"].ToString());
+                //string tmc = RemoveLastSpecialChars(dr["TMC"].ToString());
+                //if (!string.IsNullOrEmpty(mecha))
+                //{
+                //    string newString = mecha.Substring(0, mecha.Length - 1);
+              
+                //}
+                //if (!string.IsNullOrEmpty(tmc))
+                //{
+                //    string newString = tmc.Substring(0, tmc.Length - 1);
+
+                //}
+                int ctr = 0;
+                var res = "";
+                var ress = "";
+       
+                var gal = dr["TMC"].ToString();
+                var mec = dr["Mechanics"].ToString();
+                string[] gallist = gal.Split("^");
+                string[] meclist = mec.Split("^");
+                foreach (string author in gallist)
+                {
+             
+                    if (author != ""  && author != "||")
+                    {
+
+                        res += author.Replace("||","") +"^";
+                     
+                        ctr++;
+
+                    }
+
+                }
+                foreach (string mechanics in meclist)
+                {
+
+                    if (mechanics != "")
+                    {
+
+                        ress += mechanics.Replace("||", "") + "^";
+
+                        ctr++;
+
+                    }
+
+                }
                 item.Title = dr["Title"].ToString();
                 item.ImgUrl = dr["ImgUrl"].ToString();
                 item.VendorID = dr["VendorID"].ToString();
                 item.PrivilegeID = dr["PrivilegeID"].ToString();
-                item.Mechanics = dr["Mechanics"].ToString();
+                item.Mechanics = ress;
                 item.BusinessTypeName = dr["BusinessTypeName"].ToString();
                 item.Description = dr["Description"].ToString();
-                item.TMC = dr["TMC"].ToString();
+                item.TMC = res;
                 item.VendorName = dr["VendorName"].ToString();
                 item.Validity = Convert.ToDateTime(dr["Validity"].ToString()).ToString("MM/dd/yyyy");
 
@@ -230,10 +310,10 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
                 }
                 else
                 {
-                    imgfile = "https://www.alfardanoysterprivilegeclub.com/assets/img/" +data.ImgUrl;
+                    imgfile = "https://www.alfardanoysterprivilegeclub.com/assets/img/" +data.ImgUrl.Replace(" ", "%20");
                 }
                 string OTPInsert = $@"insert into tbl_PrivilegeModel (Title,Description,Mechanics,Validity,NoExpiry,ImgUrl,VendorID,isVIP,BusinessTypeID,TMC,Active) values 
-                                     ('"+data.Title+"','"+data.Description+"','"+data.Mechanics+"','"+data.Validity + "','"+data.noExpiry + "','"+ imgfile + "','"+data.VendorID + "','"+data.isVIP + "','"+data.BusinessTypeID + "','"+data.TMC + "','"+data.Active+"')";
+                                     ('"+data.Title.Replace("'","''")+"','"+data.Description+"','"+data.Mechanics.Replace("'", "''") + "','"+data.Validity + "','"+data.noExpiry + "','"+ imgfile + "','"+data.VendorID + "','"+data.isVIP + "','"+data.BusinessTypeID + "','"+data.TMC.Replace("'", "''") + "','"+data.Active+"')";
                 db.AUIDB_WithParam(OTPInsert);
                 result.Status = "Successfully Added";
 
@@ -249,10 +329,10 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
                 }
                 else
                 {
-                    imgfile = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.ImgUrl;
+                    imgfile = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.ImgUrl.Replace(" ", "%20");
                 }
-                string OTPInsert = $@"update tbl_PrivilegeModel set Title='"+data.Title+"', Description='"+data.Description+"' , Mechanics='"+data.Mechanics+"', Validity='"+data.Validity+"', NoExpiry='"+data.noExpiry+"', ImgUrl='"+ imgfile + "', " +
-                    "VendorID='"+data.VendorID+"', isVIP='"+data.isVIP+"', BusinessTypeID='"+data.BusinessTypeID+"', TMC='"+data.TMC+"' where id =" + data.Id + "";
+                string OTPInsert = $@"update tbl_PrivilegeModel set Title='"+data.Title.Replace("'", "''") + "', Description='"+data.Description+"' , Mechanics='"+data.Mechanics.Replace("'", "''") + "', Validity='"+data.Validity+"', NoExpiry='"+data.noExpiry+"', ImgUrl='"+ imgfile + "', " +
+                    "VendorID='"+data.VendorID+"', isVIP='"+data.isVIP+"', BusinessTypeID='"+data.BusinessTypeID+"', TMC='"+data.TMC.Replace("'", "''") + "' where id =" + data.Id + "";
                 db.AUIDB_WithParam(OTPInsert);
                 result.Status = "Successfully Updated";
 
@@ -276,6 +356,7 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
         {
             string delete = $@"delete tbl_MembershipPrivilegeModel where MembershipID='" + IdList[0].MembershipID + "'";
             db.AUIDB_WithParam(delete);
+
             var result = new Registerstats();
             string imgfile = "";
            
@@ -362,38 +443,60 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
             if (dt.Rows.Count != 0)
             {
                 table = db.SelectDb_SP("Get_PrivilegeisVIP", param).Tables[0];
+                var result = new List<PrivilegeUserVM>();
+                foreach (DataRow dr in table.Rows)
+                {
+                    var item = new PrivilegeUserVM();
+
+                    item.EmployeeID = dr["EmployeeID"].ToString();
+                    item.Title = dr["Title"].ToString();
+                    item.Validity = Convert.ToDateTime(dr["Validity"].ToString()).ToString("MM/dd/yyyy");
+                    item.PrivilegeImg = dr["PrivilegeImg"].ToString();
+                    item.VendorLogo = dr["VendorLogo"].ToString();
+                    item.PrivilegeID = dr["PrivilegeID"].ToString();
+                    item.VendorID = dr["VendorID"].ToString();
+                    item.BusinessTypeName = dr["BusinessTypeName"].ToString();
+                    item.Mechanics = dr["BusinessTypeName"].ToString();
+                    item.TMC = dr["TMC"].ToString();
+                    item.Description = dr["BusinessTypeName"].ToString();
+
+                    result.Add(item);
+                }
 
 
+                return Ok(result);
             }
             else
             {
                 table = db.SelectDb_SP("SP_GetPFByUserAndBType", param).Tables[0];
+                var result = new List<PrivilegeUserVM>();
+                foreach (DataRow dr in table.Rows)
+                {
+                    var item = new PrivilegeUserVM();
+
+                    item.EmployeeID = dr["EmployeeID"].ToString();
+                    item.Title = dr["Title"].ToString();
+                    item.Validity = Convert.ToDateTime(dr["Validity"].ToString()).ToString("MM/dd/yyyy");
+                    item.PrivilegeImg = dr["PrivilegeImg"].ToString();
+                    item.VendorLogo = dr["VendorLogo"].ToString();
+                    item.PrivilegeID = dr["PrivilegeID"].ToString();
+                    item.VendorID = dr["VendorID"].ToString();
+                    item.BusinessTypeName = dr["BusinessTypeName"].ToString();
+                    item.Mechanics = dr["BusinessTypeName"].ToString();
+                    item.TMC = dr["TMC"].ToString();
+                    item.Description = dr["BusinessTypeName"].ToString();
+
+                    result.Add(item);
+                }
+
+                return Ok(result);
+
             }
-            var result = new List<PrivilegeUserVM>();
-            foreach (DataRow dr in table.Rows)
-            {
-                var item = new PrivilegeUserVM();
-
-                item.EmployeeID = dr["EmployeeID"].ToString();
-                item.Title = dr["Title"].ToString();
-                item.Validity = Convert.ToDateTime(dr["Validity"].ToString()).ToString("MM/dd/yyyy");
-                item.PrivilegeImg = dr["PrivilegeImg"].ToString();
-                item.VendorLogo = dr["VendorLogo"].ToString();
-                item.PrivilegeID = dr["PrivilegeID"].ToString();
-                item.VendorID = dr["VendorID"].ToString();
-                item.BusinessTypeName = dr["BusinessTypeName"].ToString();
-                item.Mechanics = dr["BusinessTypeName"].ToString();
-                item.TMC = dr["TMC"].ToString();
-                item.Description = dr["BusinessTypeName"].ToString();
-
-                result.Add(item);
-            }
 
 
-            return Ok(result);
         }
         [HttpPost]
-        public async Task<IActionResult> PrivilegeFilterIsVIP(UserIDVM data)
+        public async Task<IActionResult> PrivilegeFilterIsVIPCMS(UserIDVM data)
         {
             string sql = "";
             string query = $@"select * from usersmodel where EmployeeID='" + data.EmployeeID + "' and isVIP = 1";
@@ -402,26 +505,32 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
             {
 
                 sql += $@"
-						 SELECT        UsersModel.Username, UsersModel.EmployeeID, tbl_PrivilegeModel.Title, tbl_CorporateModel.DateEnded as Validity, tbl_PrivilegeModel.ImgUrl AS PrivilegeImg, tbl_VendorModel.FileUrl, tbl_PrivilegeModel.PrivilegeID, 
-                         tbl_VendorModel.VendorLogo, tbl_PrivilegeModel.isVIP
-                        FROM            tbl_CorporatePrivilegeTierModel INNER JOIN
-                                                 UsersModel ON tbl_CorporatePrivilegeTierModel.CorporateID = UsersModel.CorporateID INNER JOIN
-												 				 tbl_CorporateModel on tbl_CorporateModel.id = UsersModel.CorporateID inner join
-                                                 tbl_PrivilegeModel ON tbl_CorporatePrivilegeTierModel.PrivilegeId = tbl_PrivilegeModel.Id LEFT OUTER JOIN
-                                                 tbl_VendorModel ON tbl_PrivilegeModel.VendorID = tbl_VendorModel.Id
-                        WHERE                    (UsersModel.EmployeeID = '" + data.EmployeeID + "') and UsersModel.Active = 1 and tbl_PrivilegeModel.Active = 5";
+            SELECT        UsersModel.Username, UsersModel.EmployeeID, tbl_PrivilegeModel.Title,tbl_CorporateModel.DateEnded as Validity, tbl_VendorModel.VendorID, tbl_BusinessTypeModel.BusinessTypeName, tbl_PrivilegeModel.PrivilegeID, 
+                         tbl_PrivilegeModel.ImgUrl AS PrivilegeImg, tbl_VendorModel.FileUrl AS VendorLogo, tbl_PrivilegeModel.Description, tbl_PrivilegeModel.Mechanics, tbl_PrivilegeModel.TMC, tbl_BusinessTypeModel.Id
+FROM            tbl_CorporatePrivilegeTierModel INNER JOIN
+                         UsersModel ON tbl_CorporatePrivilegeTierModel.CorporateID = UsersModel.CorporateID INNER JOIN
+						 tbl_CorporateModel on tbl_CorporateModel.id = UsersModel.CorporateID inner join
+                         tbl_PrivilegeModel ON tbl_CorporatePrivilegeTierModel.PrivilegeId = tbl_PrivilegeModel.Id LEFT OUTER JOIN
+                         tbl_VendorPrivilegeTierModel on tbl_PrivilegeModel.Id = tbl_VendorPrivilegeTierModel.PrivilegeID left join
+                         tbl_VendorModel ON tbl_VendorPrivilegeTierModel.VendorID = tbl_VendorModel.Id LEFT OUTER JOIN
+                         tbl_BusinessModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessModel.Id LEFT OUTER JOIN
+                         tbl_BusinessTypeModel ON tbl_PrivilegeModel.BusinessTypeID = tbl_BusinessTypeModel.Id
+WHERE       (UsersModel.EmployeeID = '" + data.EmployeeID + "') and tbl_PrivilegeModel.Active = 5 and  UsersModel.Active = 1";
 
             }
             else
             {
-                sql += $@"	SELECT        UsersModel.Username, UsersModel.EmployeeID, tbl_PrivilegeModel.Title,tbl_CorporateModel.DateEnded as Validity, tbl_PrivilegeModel.ImgUrl AS PrivilegeImg, tbl_VendorModel.FileUrl, tbl_PrivilegeModel.PrivilegeID, 
-                         tbl_VendorModel.VendorLogo, tbl_PrivilegeModel.isVIP
-                        FROM            tbl_CorporatePrivilegeTierModel INNER JOIN
-                                                   UsersModel ON tbl_CorporatePrivilegeTierModel.CorporateID = UsersModel.CorporateID INNER JOIN
-												 				 tbl_CorporateModel on tbl_CorporateModel.id = UsersModel.CorporateID inner join
-                                                 tbl_PrivilegeModel ON tbl_CorporatePrivilegeTierModel.PrivilegeId = tbl_PrivilegeModel.Id LEFT OUTER JOIN
-                                                 tbl_VendorModel ON tbl_PrivilegeModel.VendorID = tbl_VendorModel.Id
-                        WHERE        (tbl_PrivilegeModel.isVIP <> 1) and  (UsersModel.EmployeeID = '" + data.EmployeeID + "') and UsersModel.Active = 1 and tbl_PrivilegeModel.Active = 5";
+                sql += $@"    SELECT        UsersModel.Username, UsersModel.EmployeeID, tbl_PrivilegeModel.Title,tbl_CorporateModel.DateEnded as Validity, tbl_VendorModel.VendorID, tbl_BusinessTypeModel.BusinessTypeName, tbl_PrivilegeModel.PrivilegeID, 
+                         tbl_PrivilegeModel.ImgUrl AS PrivilegeImg, tbl_VendorModel.FileUrl AS VendorLogo, tbl_PrivilegeModel.Description, tbl_PrivilegeModel.Mechanics, tbl_PrivilegeModel.TMC, tbl_BusinessTypeModel.Id
+FROM            tbl_CorporatePrivilegeTierModel INNER JOIN
+                         UsersModel ON tbl_CorporatePrivilegeTierModel.CorporateID = UsersModel.CorporateID INNER JOIN
+						 tbl_CorporateModel on tbl_CorporateModel.id = UsersModel.CorporateID inner join
+                         tbl_PrivilegeModel ON tbl_CorporatePrivilegeTierModel.PrivilegeId = tbl_PrivilegeModel.Id LEFT OUTER JOIN
+                         tbl_VendorPrivilegeTierModel on tbl_PrivilegeModel.Id = tbl_VendorPrivilegeTierModel.PrivilegeID left join
+                         tbl_VendorModel ON tbl_VendorPrivilegeTierModel.VendorID = tbl_VendorModel.Id LEFT OUTER JOIN
+                         tbl_BusinessModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessModel.Id LEFT OUTER JOIN
+                         tbl_BusinessTypeModel ON tbl_PrivilegeModel.BusinessTypeID = tbl_BusinessTypeModel.Id
+WHERE       (UsersModel.EmployeeID = '" +data.EmployeeID + "') and tbl_CorporatePrivilegeTierModel.isVIP is null and tbl_PrivilegeModel.Active = 5 and  UsersModel.Active = 1 ";
 
             }
             DataTable table = db.SelectDb(sql).Tables[0];
@@ -436,10 +545,65 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
                 item.PrivilegeImg = dr["PrivilegeImg"].ToString();
                 item.VendorLogo = dr["VendorLogo"].ToString();
                 item.PrivilegeID = dr["PrivilegeID"].ToString();
+
+                result.Add(item);
+            }
+           
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PrivilegeFilterIsVIP(UserIDVM data)
+        {
+            string sql = "";
+            string query = $@"select * from usersmodel where EmployeeID='" + data.EmployeeID + "' and isVIP = 1";
+            DataTable dt = db.SelectDb(query).Tables[0];
+            if (dt.Rows.Count != 0)
+            {
+
+                sql += $@"
+            SELECT        UsersModel.Username, UsersModel.EmployeeID, tbl_PrivilegeModel.Title,tbl_CorporateModel.DateEnded as Validity, tbl_VendorModel.VendorID, tbl_BusinessTypeModel.BusinessTypeName, tbl_PrivilegeModel.PrivilegeID, 
+                         tbl_PrivilegeModel.ImgUrl AS PrivilegeImg, tbl_VendorModel.FileUrl AS VendorLogo, tbl_PrivilegeModel.Description, tbl_PrivilegeModel.Mechanics, tbl_PrivilegeModel.TMC, tbl_BusinessTypeModel.Id
+FROM            tbl_CorporatePrivilegeTierModel INNER JOIN
+                         UsersModel ON tbl_CorporatePrivilegeTierModel.CorporateID = UsersModel.CorporateID INNER JOIN
+						 tbl_CorporateModel on tbl_CorporateModel.id = UsersModel.CorporateID inner join
+                         tbl_PrivilegeModel ON tbl_CorporatePrivilegeTierModel.PrivilegeId = tbl_PrivilegeModel.Id LEFT OUTER JOIN
+                         tbl_VendorModel ON tbl_PrivilegeModel.VendorID = tbl_VendorModel.Id LEFT OUTER JOIN
+                         tbl_BusinessModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessModel.Id LEFT OUTER JOIN
+                         tbl_BusinessTypeModel ON tbl_PrivilegeModel.BusinessTypeID = tbl_BusinessTypeModel.Id
+WHERE       (UsersModel.EmployeeID = '" + data.EmployeeID + "') and tbl_PrivilegeModel.Active = 5 and  UsersModel.Active = 1";
+
+            }
+            else
+            {
+                sql += $@"    SELECT        UsersModel.Username, UsersModel.EmployeeID, tbl_PrivilegeModel.Title,tbl_CorporateModel.DateEnded as Validity, tbl_VendorModel.VendorID, tbl_BusinessTypeModel.BusinessTypeName, tbl_PrivilegeModel.PrivilegeID, 
+                         tbl_PrivilegeModel.ImgUrl AS PrivilegeImg, tbl_VendorModel.FileUrl AS VendorLogo, tbl_PrivilegeModel.Description, tbl_PrivilegeModel.Mechanics, tbl_PrivilegeModel.TMC, tbl_BusinessTypeModel.Id
+FROM            tbl_CorporatePrivilegeTierModel INNER JOIN
+                         UsersModel ON tbl_CorporatePrivilegeTierModel.CorporateID = UsersModel.CorporateID INNER JOIN
+						 tbl_CorporateModel on tbl_CorporateModel.id = UsersModel.CorporateID inner join
+                         tbl_PrivilegeModel ON tbl_CorporatePrivilegeTierModel.PrivilegeId = tbl_PrivilegeModel.Id LEFT OUTER JOIN
+                         tbl_VendorModel ON tbl_PrivilegeModel.VendorID = tbl_VendorModel.Id LEFT OUTER JOIN
+                         tbl_BusinessModel ON tbl_VendorModel.BusinessLocationID = tbl_BusinessModel.Id LEFT OUTER JOIN
+                         tbl_BusinessTypeModel ON tbl_PrivilegeModel.BusinessTypeID = tbl_BusinessTypeModel.Id
+WHERE       (UsersModel.EmployeeID = '" + data.EmployeeID + "') and tbl_CorporatePrivilegeTierModel.isVIP is null and tbl_PrivilegeModel.Active = 5 and  UsersModel.Active = 1 ";
+
+            }
+            DataTable table = db.SelectDb(sql).Tables[0];
+            var result = new List<PrivilegeUserVM>();
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new PrivilegeUserVM();
+
+                item.EmployeeID = dr["EmployeeID"].ToString();
+                item.Title = dr["Title"].ToString();
+                item.Validity = Convert.ToDateTime(dr["Validity"].ToString()).ToString("MM/dd/yyyy");
+                item.PrivilegeImg = dr["PrivilegeImg"].ToString();
+                item.VendorLogo = dr["VendorLogo"].ToString();
                 item.PrivilegeID = dr["PrivilegeID"].ToString();
 
                 result.Add(item);
             }
+
             return Ok(result);
         }
         [HttpPost]
@@ -450,7 +614,17 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
             new SqlParameter("@EmployeeID",data.EmployeeID),
             new SqlParameter("@BusinessTypeID",data.BusinessType)
             };
-            DataTable table = db.SelectDb_SP("SP_GetPrivilegeFbyUandBtype", param).Tables[0];
+       DataTable table = new DataTable();
+            if (table.Rows.Count != 0)
+            {
+                table = db.SelectDb_SP("Get_PrivilegeisVIP", param).Tables[0];
+
+
+            }
+            else
+            {
+                table = db.SelectDb_SP("SP_GetPFByUserAndBType", param).Tables[0];
+            }
             var result = new List<PrivilegeUserVM>();
             foreach (DataRow dr in table.Rows)
             {
