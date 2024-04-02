@@ -388,7 +388,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
             }
             if (dt.Rows.Count == 0)
             {
-                sql = $@"select * from tbl_MembershipModel where Name ='" + data.MembershipName + "'";
+                sql = $@"select * from tbl_MembershipModel where Name ='" + data.MembershipName + "'  and Status=5";
                 DataTable dt2 = db.SelectDb(sql).Tables[0];
                 if (dt2.Rows.Count == 0)
                 {
@@ -403,7 +403,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
                                    "'" + data.UserCount + "'," +
                                    "'" + data.VIPCount + "'," +
                                    "'" + membership_path+ "'," +
-                                   "'" + vipbadge_path + "'," +
+                                   "'" + vipcard_path + "'," +
                                    "'" + qrframe_path + "'," +
                                    "'" + vipbadge_path + "'," +
                                    "5) ";
