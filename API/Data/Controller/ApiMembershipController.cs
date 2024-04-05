@@ -462,13 +462,25 @@ ORDER BY tbl_MembershipModel.Id DESC";
             string imgfile = "";
             if (dt.Rows.Count != 0)
             {
+                string sql_user = $@"select * from UsersModel inner JOIN
+                        tbl_CorporateModel on UsersModel.CorporateID = tbl_CorporateModel.Id
+                        where tbl_CorporateModel.MembershipID = '" + data.Id + "' and UsersModel.Active <> 6   ";
+                DataTable dt_user = db.SelectDb(sql_user).Tables[0];
+                if (dt_user.Rows.Count == 0)
 
-                string OTPInsert = $@"update tbl_MembershipModel set Status = 6 where id ='" + data.Id + "'";
-                db.AUIDB_WithParam(OTPInsert);
-                result.Status = "Succesfully deleted";
+                {
 
-                return Ok(result);
+                    string OTPInsert = $@"update tbl_MembershipModel set Status = 6 where id ='" + data.Id + "'";
+                    db.AUIDB_WithParam(OTPInsert);
+                    result.Status = "Succesfully deleted";
 
+                    return Ok(result);
+                }
+                else
+                {
+                    result.Status = "Membership is being used and cannot be deleted!";
+                    return Ok(result);
+                }
             }
             else
             {

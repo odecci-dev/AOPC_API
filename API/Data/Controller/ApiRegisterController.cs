@@ -111,7 +111,7 @@ FROM            UsersModel INNER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)";
+WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2) order by UsersModel.Id desc";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -148,13 +148,13 @@ WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)";
 
             string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
                          tbl_UserTypeModel.UserType, UsersModel.Fullname, UsersModel.Id, UsersModel.DateCreated, tbl_PositionModel.Id AS PositionID, tbl_CorporateModel.Id AS CorporateID, tbl_StatusModel.Name AS status, UsersModel.isVIP, 
-                         UsersModel.FilePath
+                         UsersModel.FilePath,UsersModel.AllowEmailNotif
 FROM            UsersModel LEFT OUTER JOIN
                          tbl_CorporateModel ON UsersModel.CorporateID = tbl_CorporateModel.Id LEFT OUTER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) ";
+WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) order by UsersModel.Id desc";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -178,6 +178,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) ";
                 item.status = dr["status"].ToString();
                 item.FilePath = dr["FilePath"].ToString();
                 item.isVIP = dr["isVIP"].ToString();
+                item.AllowNotif = dr["AllowEmailNotif"].ToString();
 
                 result.Add(item);
             }
@@ -202,7 +203,8 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) ";
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-                         WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 3) AND (UsersModel.CorporateID = '"+data.ID+"')";
+                         WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 3) AND (UsersModel.CorporateID = '"+data.ID+"') " +
+                         "order by UsersModel.Id desc";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -245,7 +247,7 @@ FROM            UsersModel INNER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id INNER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id INNER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
+WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.Id desc";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
