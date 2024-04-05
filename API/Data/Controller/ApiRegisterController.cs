@@ -511,7 +511,6 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
                 }
                 else
                 {
-                //gv.AudittrailLogIn("Failed Registration", "User Registration Form", data.Id.ToString(), 8);
 
                 result.Status = "Invalid Registration";
               
@@ -519,8 +518,6 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
             
                 }
             
-
-            return Ok(result);
         }     
         [HttpPost]
         public IActionResult FinalUserRegistration2(UsersModel data)
@@ -699,7 +696,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
                         string EncryptPword = Cryptography.Encrypt(list[i].Password);
                         var fullname = list[i].Fname + " " + list[i].Lname;
                         string query = $@"insert into UsersModel (Username,Password,Fullname,Fname,Lname,Email,Gender,CorporateID,PositionID,JWToken,FilePath,Active,Cno,isVIP,Address,Type,EmployeeID,DateCreated) values
-                    ('" + list[i].Username + "','','" + fullname + "','" + list[i].Fname + "','" + list[i].Lname + "','" + list[i].Email + "','" + list[i].Gender + "','" + list[i].CorporateID + "','" + list[i].PositionID + "','" + string.Concat(strtokenresult.TakeLast(15)) + "','" + filepath + "','2','" + list[i].Cno + "','" + list[i].isVIP + "','N/A','" + list[i].Type + "','" + list[i].EmployeeID + "','"+DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")+"')";
+                        ('" + list[i].Username + "','','" + fullname + "','" + list[i].Fname + "','" + list[i].Lname + "','" + list[i].Email + "','" + list[i].Gender + "','" + list[i].CorporateID + "','" + list[i].PositionID + "','" + string.Concat(strtokenresult.TakeLast(15)) + "','" + filepath + "','2','" + list[i].Cno + "','" + list[i].isVIP + "','N/A','" + list[i].Type + "','" + list[i].EmployeeID + "','"+DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")+"')";
                         db.AUIDB_WithParam(query);
                         gv.AudittrailLogIn("Successfully Import User Pre-Registration ", "User Registration Form", list[i].EmployeeID.ToString(), 7);
                         _global.Status = "Successfully Saved.";
