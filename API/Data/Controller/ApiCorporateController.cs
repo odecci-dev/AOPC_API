@@ -84,7 +84,7 @@ namespace AuthSystem.Data.Controller
 FROM            tbl_MembershipModel LEFT OUTER JOIN
                          tbl_CorporateModel ON tbl_MembershipModel.Id = tbl_CorporateModel.MembershipID LEFT OUTER JOIN
                          tbl_StatusModel ON tbl_CorporateModel.Status = tbl_StatusModel.Id 
-WHERE        (tbl_CorporateModel.Status = 1)";
+WHERE        (tbl_CorporateModel.Status = 1) order by tbl_CorporateModel.Id desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<CorporateVM>();
             foreach(DataRow dr in dt.Rows)

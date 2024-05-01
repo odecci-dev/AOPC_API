@@ -61,6 +61,7 @@ namespace AuthSystem.Data.Controller
         [HttpPost]
         public async Task<IActionResult> UserInfoList(Emails data)
         {
+            var results= Cryptography.Decrypt("P3wTSdRnPqH6NgzQ1Y7Mo7+3cfW8jPXUbhybTaPbhvw=");
             GlobalVariables gv = new GlobalVariables();
 
             var result = new List<UserVM>();
@@ -111,7 +112,7 @@ FROM            UsersModel INNER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)";
+WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2) order by UsersModel.Id desc";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -154,7 +155,7 @@ FROM            UsersModel LEFT OUTER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) ";
+WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) order by UsersModel.Id desc";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -192,7 +193,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) ";
         [HttpPost]
         public async Task<IActionResult> CorporateAdminUserList(CorporateID data)
         {
-            GlobalVariables gv = new GlobalVariables();
+         
 
             string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
                          tbl_UserTypeModel.UserType, UsersModel.Fullname, UsersModel.Id, UsersModel.DateCreated, tbl_PositionModel.Id AS PositionID, tbl_CorporateModel.Id AS CorporateID, tbl_StatusModel.Name AS status, UsersModel.isVIP, 
@@ -202,7 +203,8 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) ";
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-                         WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 3) AND (UsersModel.CorporateID = '"+data.ID+"')";
+                         WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 3) AND (UsersModel.CorporateID = '"+data.ID+"') " +
+                         "order by UsersModel.Id desc";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -245,7 +247,7 @@ FROM            UsersModel INNER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id INNER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id INNER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
+WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.Id desc";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -313,7 +315,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                             FROM            tbl_PositionModel INNER JOIN
                                                      tbl_StatusModel ON tbl_PositionModel.Status = tbl_StatusModel.Id
                             WHERE        (tbl_PositionModel.Status = 5)
-                            ORDER BY tbl_PositionModel.Id DESC";
+                            ORDER BY tbl_PositionModel.Name asc";
             var result = new List<PositionModel>();
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
@@ -656,12 +658,13 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
         public async Task<IActionResult> Import(List<UserModel> list)
         {
             string result = "";
+            string query = "";
             try
             {
 
                 for (int i = 0; i < list.Count; i++)
                 {
-                    string sql = $@"select * from usersmodel where EmployeeID='" + list[i].EmployeeID + "' and Active in(1,2)";
+                    string sql = $@"select * from usersmodel where EmployeeID='" + list[i].EmployeeID + "' and Active in(1,2) and CorporateID='" + list[i].CorporateID +"'";
                     DataTable dt = db.SelectDb(sql).Tables[0];
                     if (dt.Rows.Count == 0)
                     {
@@ -696,19 +699,21 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                         }
                         string EncryptPword = Cryptography.Encrypt(list[i].Password);
                         var fullname = list[i].Fname + " " + list[i].Lname;
-                        string query = $@"insert into UsersModel (Username,Password,Fullname,Fname,Lname,Email,Gender,CorporateID,PositionID,JWToken,FilePath,Active,Cno,isVIP,Address,Type,EmployeeID,DateCreated) values
-                    ('" + list[i].Username + "','','" + fullname + "','" + list[i].Fname + "','" + list[i].Lname + "','" + list[i].Email + "','" + list[i].Gender + "','" + list[i].CorporateID + "','" + list[i].PositionID + "','" + string.Concat(strtokenresult.TakeLast(15)) + "','" + filepath + "','2','" + list[i].Cno + "','" + list[i].isVIP + "','N/A','" + list[i].Type + "','" + list[i].EmployeeID + "','"+DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")+"')";
-                        db.AUIDB_WithParam(query);
-                        gv.AudittrailLogIn("Successfully Import User Pre-Registration ", "User Registration Form", list[i].EmployeeID.ToString(), 7);
+                       query += $@"insert into UsersModel (Username,Password,Fullname,Fname,Lname,Email,Gender,CorporateID,PositionID,JWToken,FilePath,Active,Cno,isVIP,Address,Type,EmployeeID,DateCreated) values
+                         ('" + list[i].Username + "','','" + fullname + "','" + list[i].Fname + "','" + list[i].Lname + "','" + list[i].Email + "','" + list[i].Gender + "','" + list[i].CorporateID + "','" + list[i].PositionID + "','" + string.Concat(strtokenresult.TakeLast(15)) + "','" + filepath + "','2','" + list[i].Cno + "','" + list[i].isVIP + "','N/A','" + list[i].Type + "','" + list[i].EmployeeID + "','"+DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")+"')";
+                      
+                        gv.AudittrailLogIn("User Registration Form", "Successfully Import User Pre-Registration " + list[i].EmployeeID.ToString(),  list[i].EmployeeID.ToString(), 7);
+               
                         _global.Status = "Successfully Saved.";
                     }
                     else
                     {
-                        gv.AudittrailLogIn("Duplicate Entry.", "User Registration Form", list[i].EmployeeID.ToString(), 8);
-                        _global.Status = "Duplicate Entry.";
+                        gv.AudittrailLogIn("User Registration Form","Duplicate Entry. " + list[i].EmployeeID.ToString(), list[i].EmployeeID.ToString(), 8);
+                        _global.Status = "' "+ list[i].Username+ " '"+" has Duplicate Entry.";
                     }
 
                 }
+                db.AUIDB_WithParam(query);
                 result = "Registered Successfully";
 
 
@@ -931,7 +936,8 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                                             //dt.Rows[0]["MembershipName"].ToString();
                                         }
                                     }
-                                    gv.AudittrailLogIn("Successfully", "Registered New User", data.EmployeeID, 7);
+                                    gv.AudittrailLogIn("User Registration Form", "Registered New User "+ data.EmployeeID, data.EmployeeID, 7);
+                               
                                     result = "Registered Successfully";
                                 }
                             }
@@ -977,7 +983,8 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                                "where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);
 
-                        gv.AudittrailLogIn("Successfully", "Registered Updated User Information", data.EmployeeID, 7);
+                        gv.AudittrailLogIn("User Registration Form", "Registered Updated User Information "+ data.EmployeeID, data.EmployeeID, 7);
+
 
                         result = "Updated Successfully";
                     }

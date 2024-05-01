@@ -185,7 +185,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
                 string vipbadge_path = "";
                 if (dr["MembershipCard"].ToString() == null || dr["MembershipCard"].ToString() == string.Empty) 
                 {
-                    membership_path = "https://www.svgrepo.com/download/83325/id-card.svg";
+                    membership_path = "https://alfardanoysterprivilegeclub.com/assets/img/MembershipCard/id-card.jpg";
                 }
                 else
                 {
@@ -194,7 +194,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
 
                 if (dr["VIPCard"].ToString() == null || dr["VIPCard"].ToString() == "")
                 {
-                    vipcard_path = "https://www.svgrepo.com/download/83325/id-card.svg";
+                    vipcard_path = "https://alfardanoysterprivilegeclub.com/assets/img/MembershipCard/id-card.jpg";
                 }
                 else
                 {
@@ -202,7 +202,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
                 }
                 if (dr["QRFrame"].ToString() == null || dr["QRFrame"].ToString() == string.Empty)
                 {
-                    qrframe_path = "https://www.svgrepo.com/download/83325/id-card.svg";
+                    qrframe_path = "https://alfardanoysterprivilegeclub.com/assets/img/MembershipCard/id-card.jpg";
                 }
                 else
                 {
@@ -210,7 +210,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
                 }
                 if (dr["VIPBadge"].ToString() == null || dr["VIPBadge"].ToString() == string.Empty)
                 {
-                    vipbadge_path = "https://www.svgrepo.com/download/83325/id-card.svg";
+                    vipbadge_path = "https://alfardanoysterprivilegeclub.com/assets/img/MembershipCard/id-card.jpg";
                 }
                 else
                 {
@@ -355,7 +355,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
             string vipbadge_path = "";
             if (data.MembershipCard == null)
             {
-                membership_path = "https://www.svgrepo.com/download/83325/id-card.svg";
+                membership_path = "https://alfardanoysterprivilegeclub.com/assets/img/MembershipCard/id-card.jpg";
             }
             else
             {
@@ -364,7 +364,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
 
             if (data.VIPCard == null)
             {
-                vipcard_path = "https://www.svgrepo.com/download/83325/id-card.svg";
+                vipcard_path = "https://alfardanoysterprivilegeclub.com/assets/img/MembershipCard/id-card.jpg";
             }
             else
             {
@@ -372,7 +372,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
             }
             if (data.QRFrame == null)
             {
-                qrframe_path = "https://www.svgrepo.com/download/83325/id-card.svg";
+                qrframe_path = "https://alfardanoysterprivilegeclub.com/assets/img/MembershipCard/id-card.jpg";
             }
             else
             {
@@ -380,7 +380,7 @@ ORDER BY tbl_MembershipModel.Id DESC";
             }
             if (data.VIPBadge == null)
             {
-                vipbadge_path = "https://www.svgrepo.com/download/83325/id-card.svg";
+                vipbadge_path = "https://alfardanoysterprivilegeclub.com/assets/img/MembershipCard/id-card.jpg";
             }
             else
             {
@@ -462,13 +462,25 @@ ORDER BY tbl_MembershipModel.Id DESC";
             string imgfile = "";
             if (dt.Rows.Count != 0)
             {
+                string sql_user = $@"select * from UsersModel inner JOIN
+                        tbl_CorporateModel on UsersModel.CorporateID = tbl_CorporateModel.Id
+                        where tbl_CorporateModel.MembershipID = '" + data.Id + "' and UsersModel.Active <> 6   ";
+                DataTable dt_user = db.SelectDb(sql_user).Tables[0];
+                if (dt_user.Rows.Count == 0)
 
-                string OTPInsert = $@"update tbl_MembershipModel set Status = 6 where id ='" + data.Id + "'";
-                db.AUIDB_WithParam(OTPInsert);
-                result.Status = "Succesfully deleted";
+                {
 
-                return Ok(result);
+                    string OTPInsert = $@"update tbl_MembershipModel set Status = 6 where id ='" + data.Id + "'";
+                    db.AUIDB_WithParam(OTPInsert);
+                    result.Status = "Succesfully deleted";
 
+                    return Ok(result);
+                }
+                else
+                {
+                    result.Status = "Membership is being used and cannot be deleted!";
+                    return Ok(result);
+                }
             }
             else
             {

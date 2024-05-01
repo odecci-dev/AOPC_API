@@ -48,8 +48,13 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> AudittrailList()
         {
             GlobalVariables gv = new GlobalVariables();
-            string sql = $@"SELECT        tbl_audittrailModel.Id, tbl_audittrailModel.Actions, tbl_audittrailModel.Module, tbl_audittrailModel.DateCreated, tbl_StatusModel.Name AS status, UsersModel.EmployeeID, UsersModel.Fname, UsersModel.Lname, 
-                         tbl_PositionModel.Name AS PositionName, tbl_CorporateModel.CorporateName, tbl_UserTypeModel.UserType
+            string sql = $@"SELECT        tbl_audittrailModel.Id, tbl_audittrailModel.Actions, tbl_audittrailModel.Module, tbl_audittrailModel.DateCreated, tbl_StatusModel.Name AS status, 
+ case when UsersModel.EmployeeID is null then 'Alfardan-Admin' else UsersModel.EmployeeID end as EmployeeID , 
+ case when UsersModel.Fname is null then 'Alfardan' else UsersModel.Fname end Fname, 
+case when UsersModel.Lname is null then 'Administrator' else UsersModel.Lname end Lname, 
+case when tbl_PositionModel.Name is null then 'System Administrator' else tbl_PositionModel.Name end AS PositionName, 
+case when tbl_CorporateModel.CorporateName is null then 'Alfardan Oyster Privilege Club' else  tbl_CorporateModel.CorporateName end CorporateName, 
+case when tbl_UserTypeModel.UserType is null then 'ADMIN' else tbl_UserTypeModel.UserType end UserType
                          FROM            tbl_audittrailModel LEFT OUTER JOIN
                          tbl_StatusModel ON tbl_audittrailModel.status = tbl_StatusModel.Id LEFT OUTER JOIN
                          UsersModel ON tbl_audittrailModel.EmployeeID = UsersModel.EmployeeID LEFT OUTER JOIN

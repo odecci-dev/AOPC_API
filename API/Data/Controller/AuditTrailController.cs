@@ -20,6 +20,7 @@ using static AuthSystem.Data.Controller.ApiRegisterController;
 using System.Web.Http.Results;
 using MimeKit;
 using MailKit.Net.Smtp;
+using static AuthSystem.Data.Controller.ApiVendorController;
 namespace AuthSystem.Data.Controller
 {
     //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -34,7 +35,7 @@ namespace AuthSystem.Data.Controller
         private ApiGlobalModel _global = new ApiGlobalModel();
         private readonly JwtAuthenticationManager jwtAuthenticationManager;
         private readonly IWebHostEnvironment _environment;
-
+        DBMethods dbmet = new DBMethods();
         public AuditTrailController(IOptions<AppSettings> appSettings, ApplicationDbContext context,
         JwtAuthenticationManager jwtAuthenticationManager, IWebHostEnvironment environment)
         {
@@ -44,13 +45,28 @@ namespace AuthSystem.Data.Controller
             this.jwtAuthenticationManager = jwtAuthenticationManager;
 
         }
+        public class AuditFullName
+        {
+            public string FullName { get; set; }
+        }
+        [HttpPost]
+        public async Task<IActionResult> AuditTrailSearch(AuditFullName data)
+        {
+            var result = dbmet.GetAuditTrailList().Where(a => a.FullName.ToUpper().Contains(data.FullName.ToUpper())).ToList();
+            return Ok(result);
+        }
 
         [HttpGet]
         public async Task<IActionResult> AudittrailList()
         {
             GlobalVariables gv = new GlobalVariables();
-            string sql = $@"SELECT        tbl_audittrailModel.Id, tbl_audittrailModel.Actions, tbl_audittrailModel.Module, tbl_audittrailModel.DateCreated, tbl_StatusModel.Name AS status, UsersModel.EmployeeID, UsersModel.Fname, UsersModel.Lname, 
-                         tbl_PositionModel.Name AS PositionName, tbl_CorporateModel.CorporateName, tbl_UserTypeModel.UserType
+            string sql = $@"SELECT        tbl_audittrailModel.Id, tbl_audittrailModel.Actions, tbl_audittrailModel.Module, tbl_audittrailModel.DateCreated, tbl_StatusModel.Name AS status, 
+ case when UsersModel.EmployeeID is null then 'Alfardan-Admin' else UsersModel.EmployeeID end as EmployeeID , 
+ case when UsersModel.Fname is null then 'Alfardan' else UsersModel.Fname end Fname, 
+case when UsersModel.Lname is null then 'Administrator' else UsersModel.Lname end Lname, 
+case when tbl_PositionModel.Name is null then 'System Administrator' else tbl_PositionModel.Name end AS PositionName, 
+case when tbl_CorporateModel.CorporateName is null then 'Alfardan Oyster Privilege Club' else  tbl_CorporateModel.CorporateName end CorporateName, 
+case when tbl_UserTypeModel.UserType is null then 'ADMIN' else tbl_UserTypeModel.UserType end UserType
                          FROM            tbl_audittrailModel LEFT OUTER JOIN
                          tbl_StatusModel ON tbl_audittrailModel.status = tbl_StatusModel.Id LEFT OUTER JOIN
                          UsersModel ON tbl_audittrailModel.EmployeeID = UsersModel.EmployeeID LEFT OUTER JOIN
