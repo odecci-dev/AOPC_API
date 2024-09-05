@@ -175,5 +175,48 @@ ORDER BY tbl_VendorModel.Id DESC";
 
             return result;
         }
+
+        public List<UserVM> GetUserList()
+        {
+
+            string sql = $@"SELECT UsersModel.Username,UsersModel.Fname,UsersModel.Lname,UsersModel.Email,UsersModel.Email,UsersModel.Gender,UsersModel.EmployeeID, 
+				tbl_CorporateModel.MembershipID,tbl_PositionModel.Name 'position',UsersModel.PositionID,
+				tbl_CorporateModel.CorporateName,tbl_CorporateModel.Id 'corporateid',
+				tbl_UserTypeModel.UserType,coalesce(UsersModel.Fullname,(UsersModel.Fname + ' ' + UsersModel.Lname ))'fullname',UsersModel.DateCreated,tbl_StatusModel.Name 'status',usersModel.FilePath,
+				UsersModel.isVIP, UsersModel.AllowEmailNotif FROM UsersModel 
+                inner join tbl_CorporateModel on CorporateID = tbl_CorporateModel.Id
+				inner join tbl_StatusModel on Active = tbl_StatusModel.Id
+				left join tbl_PositionModel on UsersModel.PositionID = tbl_PositionModel.Id
+				left join tbl_UserTypeModel on UsersModel.Type = tbl_UserTypeModel.Id";
+            var result = new List<UserVM>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new UserVM();
+                item.Username = dr["Username"].ToString();
+                item.Fname = dr["Fname"].ToString();
+                item.Lname = dr["Lname"].ToString();
+                item.Email = dr["Email"].ToString();
+                item.Gender = dr["Gender"].ToString();
+                item.EmployeeID = dr["EmployeeID"].ToString();
+                item.MembershipID = dr["MembershipID"].ToString();
+                item.Position = dr["position"].ToString();
+                item.PositionID = dr["PositionId"].ToString();
+                item.Corporatename = dr["CorporateName"].ToString();
+                item.CorporateID = dr["corporateid"].ToString();
+                item.UserType = dr["UserType"].ToString();
+                item.Fullname = dr["fullname"].ToString();
+                item.DateCreated = dr["DateCreated"].ToString();
+                item.status = dr["status"].ToString();
+                item.FilePath = dr["FilePath"].ToString();
+                item.isVIP = dr["isVIP"].ToString();
+                item.AllowNotif = dr["AllowEmailNotif"].ToString();
+                result.Add(item);
+            }
+
+            return result;
+        }
+
     }
 }
