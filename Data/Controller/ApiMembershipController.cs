@@ -102,67 +102,79 @@ namespace AuthSystem.Data.Controller
             var stats = "";
             var isvip = "";
             var vid = "";
-            string sql2 = $@"select Id,VendorName from tbl_VendorModel where Status=5";
+            string sql2 = $@"SELECT tbl_PrivilegeModel.Id,VendorName FROM tbl_PrivilegeModel
+            left join tbl_VendorModel on tbl_PrivilegeModel.BusinessTypeID = tbl_VendorModel.BusinessTypeId
+            where tbl_PrivilegeModel.Active = '5' and tbl_PrivilegeModel.Id = '" + data.Id + "'";
             DataTable dt2 = db.SelectDb(sql2).Tables[0];
-
             foreach (DataRow dr in dt2.Rows)
             {
-                string sqls = $@"SELECT       PrivilegeID, VendorID, isVIP
-                                FROM            tbl_VendorPrivilegeTierModel
-                                WHERE        (PrivilegeID = '" + data.Id + "') ";
-                DataTable dts = db.SelectDb(sqls).Tables[0];
-
-                if (dts.Rows.Count == 0)
-                {
-
-                    string vendor_sql = $@"SELECT      PrivilegeID, VendorID, isVIP
-                                FROM           tbl_VendorPrivilegeTierModel
-                                WHERE        (VendorID = '" + dr["Id"].ToString() + "')  and    (PrivilegeID = '" + data.Id + "') ";
-                    DataTable dt_ = db.SelectDb(vendor_sql).Tables[0];
-                    if (dt_.Rows.Count != 0)
-                    {
-                        stats = "1";
-                        isvip = "0";
-
-                    }
-                    else
-                    {
-                        stats = "0";
-                        isvip = "0";
-                    }
-                    var item = new PrivVendListItem();
-                    item.VendorName = dr["VendorName"].ToString();
-                    item.vid = dr["Id"].ToString();
-                    item.stats = stats;
-                    result.Add(item);
-                }
-                else
-                {
-                    string sql = $@"SELECT      PrivilegeID, VendorID, isVIP
-                                FROM           tbl_VendorPrivilegeTierModel
-                        WHERE        (PrivilegeID = '" + data.Id + "') and  VendorID='"+dr["Id"].ToString()+"'";
-                    DataTable dt = db.SelectDb(sql).Tables[0];
-
-                    if (dt.Rows.Count != 0)
-                    {
-                        stats = "1";
-                        isvip = dt.Rows[0]["isVIP"].ToString();
-                    }
-                    else
-                    {
-                        stats = "0";
-                        isvip = "0";
-                    }
-                    var item = new PrivVendListItem();
-                    item.VendorName = dr["VendorName"].ToString();
-                    item.vid = dr["Id"].ToString();
-                    item.stats = stats;
-                    result.Add(item);
-
-                }
-
-
+                var item = new PrivVendListItem();
+                item.VendorName = dr["VendorName"].ToString();
+                item.vid = dr["Id"].ToString();
+                item.stats = "0";
+                result.Add(item);
             }
+
+
+
+            //foreach (DataRow dr in dt2.Rows)
+            //{
+            //    string sqls = $@"SELECT       PrivilegeID, VendorID, isVIP
+            //                    FROM            tbl_VendorPrivilegeTierModel
+            //                    WHERE        (PrivilegeID = '" + data.Id + "') ";
+            //    DataTable dts = db.SelectDb(sqls).Tables[0];
+
+            //    if (dts.Rows.Count == 0)
+            //    {
+
+            //        string vendor_sql = $@"SELECT      PrivilegeID, VendorID, isVIP
+            //                    FROM           tbl_VendorPrivilegeTierModel
+            //                    WHERE        (VendorID = '" + dr["Id"].ToString() + "')  and    (PrivilegeID = '" + data.Id + "') ";
+            //        DataTable dt_ = db.SelectDb(vendor_sql).Tables[0];
+            //        if (dt_.Rows.Count != 0)
+            //        {
+            //            stats = "1";
+            //            isvip = "0";
+
+            //        }
+            //        else
+            //        {
+            //            stats = "0";
+            //            isvip = "0";
+            //        }
+            //        var item = new PrivVendListItem();
+            //        item.VendorName = dr["VendorName"].ToString();
+            //        item.vid = dr["Id"].ToString();
+            //        item.stats = stats;
+            //        result.Add(item);
+            //    }
+            //    else
+            //    {
+            //        string sql = $@"SELECT      PrivilegeID, VendorID, isVIP
+            //                    FROM           tbl_VendorPrivilegeTierModel
+            //            WHERE        (PrivilegeID = '" + data.Id + "') and  VendorID='"+dr["Id"].ToString()+"'";
+            //        DataTable dt = db.SelectDb(sql).Tables[0];
+
+            //        if (dt.Rows.Count != 0)
+            //        {
+            //            stats = "1";
+            //            isvip = dt.Rows[0]["isVIP"].ToString();
+            //        }
+            //        else
+            //        {
+            //            stats = "0";
+            //            isvip = "0";
+            //        }
+            //        var item = new PrivVendListItem();
+            //        item.VendorName = dr["VendorName"].ToString();
+            //        item.vid = dr["Id"].ToString();
+            //        item.stats = stats;
+            //        result.Add(item);
+
+            //    }
+
+
+        //}
             return Ok(result);
         }
         [HttpGet]

@@ -70,7 +70,10 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> PrivilegeList()
         {
             string sql = $@"SELECT        tbl_PrivilegeModel.Id, tbl_PrivilegeModel.Title, tbl_PrivilegeModel.Description, tbl_PrivilegeModel.Validity, tbl_PrivilegeModel.NoExpiry, tbl_PrivilegeModel.DateCreated, tbl_PrivilegeModel.ImgUrl, 
-                         tbl_PrivilegeModel.PrivilegeID, tbl_PrivilegeModel.isVIP, tbl_PrivilegeModel.TMC, tbl_StatusModel.Name AS Status, tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_PrivilegeModel.Mechanics, 
+                         tbl_PrivilegeModel.PrivilegeID, tbl_PrivilegeModel.isVIP, 
+                         REPLACE(REPLACE(REPLACE(tbl_PrivilegeModel.TMC, '?	', CHAR(10)+CHAR(12)+'• '),'?', CHAR(10)+CHAR(12)+'  •'),CHAR(10),CHAR(10)+CHAR(12)) as TMC,
+						 REPLACE(REPLACE(REPLACE(tbl_PrivilegeModel.Mechanics, '?	', CHAR(10)+CHAR(12)+'• '),'?', CHAR(10)+CHAR(12)+'  •'),CHAR(10),CHAR(10)+CHAR(12)) as Mechanics,
+                         tbl_StatusModel.Name AS Status, tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, 
                          tbl_PrivilegeModel.BusinessTypeID, tbl_VendorModel.Id AS VendorID
 FROM            tbl_PrivilegeModel INNER JOIN
                          tbl_StatusModel ON tbl_PrivilegeModel.Active = tbl_StatusModel.Id LEFT OUTER JOIN
@@ -90,11 +93,11 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
                     string newString = mecha.Substring(0, mecha.Length - 1);
 
                 }
-                if (!string.IsNullOrEmpty(tmc))
-                {
-                    string newString = tmc.Substring(0, tmc.Length - 1);
+                //if (!string.IsNullOrEmpty(tmc))
+                //{
+                //    string newString = tmc.Substring(0, tmc.Length - 1);
 
-                }
+                //}
                 var item = new PrivilegeVM();
                 item.Id = int.Parse(dr["Id"].ToString());
                 item.Title = dr["Title"].ToString();

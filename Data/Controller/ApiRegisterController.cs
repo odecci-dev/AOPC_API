@@ -112,7 +112,7 @@ FROM            UsersModel INNER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2) order by UsersModel.Id desc";
+WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2) order by Fname";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -805,7 +805,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
                         }
                         else
                         {
-                            result = "Vendor Name already Exist";
+                            result = "Error! Position already exists.";
                             return BadRequest(result);
                         }
                     }
