@@ -567,21 +567,24 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             string FeaturedImage = "";
             string res_image = "";
             int image_ = 0;
-            if (data.Id != 0)
-            {
-                sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5 and id='" + data.Id + "' order by id desc  ";
-                DataTable table = db.SelectDb(sql_).Tables[0];
-                string str = table.Rows[0]["OfferingID"].ToString();
-                res_image = str;
-            }
-            else
-            {
-                sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5  order by id desc  ";
-                DataTable table = db.SelectDb(sql_).Tables[0];
-                string str = table.Rows[0]["OfferingID"].ToString();
-                image_ = int.Parse(str.Replace("Offering-", "")) + 1;
-                res_image = "Offering-0" + image_;
-            }
+            //if (data.Id != 0)
+            //{
+            //    sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5 and id='" + data.Id + "' order by id desc  ";
+            //    DataTable table = db.SelectDb(sql_).Tables[0];
+            //    string str = table.Rows[0]["OfferingID"].ToString();
+            //    res_image = str;
+            //}
+            //else
+            //{
+            //    sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5  order by id desc  ";
+            //    DataTable table = db.SelectDb(sql_).Tables[0];
+            //    if (table.Rows.Count != 0)
+            //    {
+            //        string str = table.Rows[0]["OfferingID"].ToString();
+            //        image_ = int.Parse(str.Replace("Offering-", "")) + 1;
+            //        res_image = "Offering-0" + image_;
+            //    }
+            //}
             if (data.ImgUrl == null || data.ImgUrl == string.Empty)
             {
                 FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/defaultavatar.png";
@@ -618,11 +621,10 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
                                     ",'" + data.URL + "','" + data.Offerdays + "','" + data.StartDateTime + "','" + data.EndDateTime + "','" + data.FromTime + "','" + data.ToTime + "')";
                         db.AUIDB_WithParam(Insert);
                   
-      
+                    }
                     result.Status = "Successfully Added";
 
                     return Ok(result);
-                    }
                 }
       
 
