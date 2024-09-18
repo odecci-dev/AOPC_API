@@ -45,131 +45,6 @@ namespace AuthSystem.Data.Controller
             this.jwtAuthenticationManager = jwtAuthenticationManager;
    
         }
-      
-        //[HttpGet]
-        //public async Task<IActionResult> OfferingList(string? id)
-        //{
-        //    string sql = "";
-        //    //DataTable table = db.SelectDb_SP("SP_OfferingList").Tables[0];
-        //    string test = id;
-        //       var result = new List<OfferingVM>();
-        //    if (test == null)
-        //    {
-        //        //all
-        //        DataTable table = db.SelectDb_SP("SP_OfferingList").Tables[0];
-         
-        //    foreach (DataRow dr in table.Rows)
-        //    {
-        //        var item = new OfferingVM();
-        //        item.Id= int.Parse(dr["Id"].ToString());
-        //        item.BusinessTypeName=dr["BusinessTypeName"].ToString();
-        //        item.VendorName= dr["VendorName"].ToString();
-        //        item.PromoReleaseText= dr["PromoReleaseText"].ToString();
-        //        item.OfferingName=dr["OfferingName"].ToString();
-        //        item.MembershipName=dr["MembershipName"].ToString();
-        //        item.VendorID= dr["VendorID"].ToString();
-        //        item.ImgUrl= dr["ImgUrl"].ToString();
-        //        item.OfferingID= dr["OfferingID"].ToString();
-        //        item.Status= dr["Status"].ToString();
-          
-        //        result.Add(item);
-        //    }
-
-        //    return Ok(result);
-        //    }
-        //    else
-        //    {
-        //        //get filter with id
-        //        string sqls = $@"select Name from tbl_MembershipModel where Status = 5 ";
-        //        DataTable tables = db.SelectDb(sqls).Tables[0];
-           
-        //        foreach (DataRow dr in tables.Rows)
-        //        {
-              
-        //            var item = new OfferingVM();
-        //            switch (dr["Name"].ToString())
-        //            {
-        //                case "BRONZE":
-        //                    sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-        //                 tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
-        //                FROM            tbl_OfferingModel INNER JOIN
-        //                                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-        //                                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-        //                                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-        //                                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id
-        //                WHERE        (tbl_OfferingModel.StatusID = 5) and tbl_MembershipModel.Name = 'BRONZE' ";
-
-        //                    break;
-        //                case "SILVER":
-        //                    sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-        //                 tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
-        //                FROM            tbl_OfferingModel INNER JOIN
-        //                                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-        //                                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-        //                                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-        //                                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id
-        //                WHERE        (tbl_OfferingModel.StatusID = 5) and tbl_MembershipModel.Name in ('BRONZE','SILVER')";
-        //                    break;
-        //                case "GOLD":
-        //                    sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-        //                 tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
-        //                FROM            tbl_OfferingModel INNER JOIN
-        //                                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-        //                                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-        //                                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-        //                                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id
-        //                WHERE        (tbl_OfferingModel.StatusID = 5) and tbl_MembershipModel.Name in ('BRONZE','SILVER','GOLD')";
-        //                    break;
-        //                case "PLATINUM":
-        //                    sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-        //                 tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
-        //                FROM            tbl_OfferingModel INNER JOIN
-        //                                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-        //                                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-        //                                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-        //                                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id
-        //                WHERE        (tbl_OfferingModel.StatusID = 5) and tbl_MembershipModel.Name in ('BRONZE','SILVER','GOLD','PLATINUM')";
-        //                    break;
-        //                case "EXCLUSIVE ":
-
-        //                    sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
-        //                 tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.StatusID
-        //                FROM            tbl_OfferingModel INNER JOIN
-        //                                         tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
-        //                                         tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
-        //                                         tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-        //                                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id
-        //                WHERE        (tbl_OfferingModel.StatusID = 5) ";
-
-        //                    break;
-
-        //                default:
-        //                    break;
-        //            }
-        //            DataTable dt = db.SelectDb(sql).Tables[0];
-        //            foreach (DataRow dr_ in dt.Rows)
-        //            {
-        //                item.Id = int.Parse(dr_["Id"].ToString());
-        //                item.BusinessTypeName = dr_["BusinessTypeName"].ToString();
-        //                item.VendorName = dr_["VendorName"].ToString();
-        //                item.PromoReleaseText = dr_["PromoReleaseText"].ToString();
-        //                item.OfferingName = dr_["OfferingName"].ToString();
-        //                item.MembershipName = dr_["MembershipName"].ToString();
-        //                item.VendorID = dr_["VendorID"].ToString();
-        //                item.ImgUrl = dr_["ImgUrl"].ToString();
-        //                item.OfferingID = dr_["OfferingID"].ToString();
-        //                item.Status = dr_["Status"].ToString();
-
-        //                result.Add(item);
-        //            }
-        //        }
-
-              
-              
-        //    }
-
-        //    return Ok(result);
-        //}  
          [HttpGet] // change to post
         public async Task<IActionResult> OfferingList(string? id)
         {
@@ -567,21 +442,21 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             string FeaturedImage = "";
             string res_image = "";
             int image_ = 0;
-            if (data.Id != 0)
-            {
-                sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5 and id='" + data.Id + "' order by id desc  ";
-                DataTable table = db.SelectDb(sql_).Tables[0];
-                string str = table.Rows[0]["OfferingID"].ToString();
-                res_image = str;
-            }
-            else
-            {
-                sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5  order by id desc  ";
-                DataTable table = db.SelectDb(sql_).Tables[0];
-                string str = table.Rows[0]["OfferingID"].ToString();
-                image_ = int.Parse(str.Replace("Offering-", "")) + 1;
-                res_image = "Offering-0" + image_;
-            }
+            //if (data.Id != 0)
+            //{
+            //    sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5 and id='" + data.Id + "' order by id desc  ";
+            //    DataTable table = db.SelectDb(sql_).Tables[0];
+            //    string str = table.Rows[0]["OfferingID"].ToString();
+            //    res_image = str;
+            //}
+            //else
+            //{
+            //    sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5  order by id desc  ";
+            //    DataTable table = db.SelectDb(sql_).Tables[0];
+            //    string str = table.Rows[0]["OfferingID"].ToString();
+            //    image_ = int.Parse(str.Replace("Offering-", "")) + 1;
+            //    res_image = "Offering-0" + image_;
+            //}
             if (data.ImgUrl == null || data.ImgUrl == string.Empty)
             {
                 FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/defaultavatar.png";
@@ -609,7 +484,10 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
                                    ('" + data.VendorID + "','10','" + data.BusinessTypeID + "','" + data.OfferingName.Replace("'", "''") + "','" + data.PromoDesc.Replace("'", "''") + "','" + data.PromoReleaseText + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
                                    ",'" + data.URL + "','" + data.Offerdays + "','" + data.StartDateTime + "','" + data.EndDateTime + "','" + data.FromTime + "','" + data.ToTime + "')";
                            db.AUIDB_WithParam(Insert);
-                        
+                        result.Status = "Successfully Added";
+
+                        return Ok(result);
+
                     }
                     else
                     {
@@ -619,7 +497,7 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
                         db.AUIDB_WithParam(Insert);
                   
       
-                    result.Status = "Successfully Added";
+                         result.Status = "Successfully Added";
 
                     return Ok(result);
                     }
@@ -653,7 +531,6 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             }
 
 
-            return Ok(result);
         }
         public class DeleteOffer
         {

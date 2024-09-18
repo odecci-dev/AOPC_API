@@ -61,7 +61,7 @@ namespace AuthSystem.Data.Controller
         [HttpPost]
         public async Task<IActionResult> UserInfoList(Emails data)
         {
-            var results= Cryptography.Decrypt("P3wTSdRnPqH6NgzQ1Y7Mo7+3cfW8jPXUbhybTaPbhvw=");
+            var results= Cryptography.Decrypt("wU8BuRVCukbBjmyAn17X6A==");
             GlobalVariables gv = new GlobalVariables();
 
             var result = new List<UserVM>();
@@ -228,6 +228,58 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) order
                 item.status = dr["status"].ToString();
                 item.FilePath = dr["FilePath"].ToString();
                 item.isVIP = dr["isVIP"].ToString();
+
+                result.Add(item);
+            }
+
+            return Ok(result);
+        }
+        public class CorporateModelId
+        {
+            public string Id { get; set; }
+            public string CorpId { get; set; }
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> CorporateAdminUserFilderById(CorporateModelId data)
+        {
+
+
+            string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
+                         tbl_UserTypeModel.UserType, UsersModel.Fullname, UsersModel.Id, UsersModel.DateCreated, tbl_PositionModel.Id AS PositionID, tbl_CorporateModel.Id AS CorporateID, tbl_StatusModel.Name AS status, UsersModel.isVIP, 
+                         UsersModel.FilePath,tbl_CorporateModel.MembershipID,UsersModel.AllowEmailNotif
+                         FROM            UsersModel LEFT OUTER JOIN
+                         tbl_CorporateModel ON UsersModel.CorporateID = tbl_CorporateModel.Id LEFT OUTER JOIN
+                         tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
+                         tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
+                         tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
+                         WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 3) and  UsersModel.Id ='" +data.Id+"' AND (UsersModel.CorporateID = '" + data.CorpId + "') " +
+                         "order by UsersModel.Id desc";
+            var result = new List<UserVM>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new UserVM();
+                item.Id = int.Parse(dr["id"].ToString());
+                item.Fullname = dr["Fname"].ToString() + " " + dr["Lname"].ToString();
+                item.Username = dr["Username"].ToString();
+                item.Fname = dr["Fname"].ToString();
+                item.Lname = dr["Lname"].ToString();
+                item.Email = dr["Email"].ToString();
+                item.Gender = dr["Gender"].ToString();
+                item.EmployeeID = dr["EmployeeID"].ToString();
+                item.Position = dr["Position"].ToString();
+                item.Corporatename = dr["Corporatename"].ToString();
+                item.UserType = dr["UserType"].ToString();
+                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
+                item.CorporateID = dr["CorporateID"].ToString();
+                item.PositionID = dr["PositionID"].ToString();
+                item.status = dr["status"].ToString();
+                item.FilePath = dr["FilePath"].ToString();
+                item.isVIP = dr["isVIP"].ToString();
+                item.MembershipID = dr["MembershipID"].ToString();
+                item.AllowNotif = dr["AllowEmailNotif"].ToString() == "" ? "0" : dr["AllowEmailNotif"].ToString();
 
                 result.Add(item);
             }
@@ -972,18 +1024,26 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
                         if (data.Type == 1)
                         {
                             password = Cryptography.Encrypt(data.Password);
+                            query += $@"update  UsersModel set Password='" + password + "', Fname='" + data.Fname + "',Lname='" + data.Lname + "',Username='" + data.Username + "'" +
+                        ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' ,isVIP='" + data.isVIP + "', PositionID='" + data.PositionID + "'" +
+                        ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='" + data.EmployeeID + "' " +
+                        "where  Id='" + data.Id + "' ";
+                            db.AUIDB_WithParam(query);
+
+                            gv.AudittrailLogIn("User Registration Form", "Registered Updated User Information " + data.EmployeeID, data.EmployeeID, 7);
                         }
                         else
                         {
                             password = "";
-                        }
-                        query += $@"update  UsersModel set Fname='" + data.Fname + "',Lname='" + data.Lname + "',Username='" + data.Username + "'" +
-                               ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' ,isVIP='"+data.isVIP+"', PositionID='" + data.PositionID + "'" +
-                               ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='" + data.EmployeeID + "' " +
-                               "where  Id='" + data.Id + "' ";
-                        db.AUIDB_WithParam(query);
+                            query += $@"update  UsersModel set Fname='" + data.Fname + "',Lname='" + data.Lname + "',Username='" + data.Username + "'" +
+                              ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' ,isVIP='" + data.isVIP + "', PositionID='" + data.PositionID + "'" +
+                              ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='" + data.EmployeeID + "' " +
+                              "where  Id='" + data.Id + "' ";
+                            db.AUIDB_WithParam(query);
 
-                        gv.AudittrailLogIn("User Registration Form", "Registered Updated User Information "+ data.EmployeeID, data.EmployeeID, 7);
+                            gv.AudittrailLogIn("User Registration Form", "Registered Updated User Information " + data.EmployeeID, data.EmployeeID, 7);
+                        }
+                       
 
 
                         result = "Updated Successfully";

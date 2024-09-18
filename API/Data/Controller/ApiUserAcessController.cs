@@ -175,7 +175,7 @@ namespace AuthSystem.Data.Controller
             catch (Exception ex)
             {
                 result.Status = "Error";
-                return BadRequest(result);
+                return BadRequest(ex.Message);
             }
         }
         public class SupportModel
@@ -213,16 +213,15 @@ namespace AuthSystem.Data.Controller
                 {
                     var fullname = dt.Rows[0]["Fname"].ToString() + " " + dt.Rows[0]["Lname"].ToString();
                     var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("ALFARDAN OYSTER PRIVILEGE CLUB", "app@alfardan.com.qa"));
-                //message.To.Add(new MailboxAddress("Ace Caspe", "ace.caspe@odecci.com"));
-                //message.To.Add(new MailboxAddress("Marito Ace", data.Email));
-                message.To.Add(new MailboxAddress("Alfardan Support", "lerjun.barasona@odecci.com"));
-                message.Bcc.Add(new MailboxAddress("Alfardan Support", "support@odecci.com"));
-                message.ReplyTo.Add(new MailboxAddress(fullname, dt.Rows[0]["Email"].ToString()));
-                    //message.Bcc.Add(new MailboxAddress("Lerjun Barasona ", "lerjun.barasona@odecci.com"));
-                    //message.To.Add(new MailboxAddress("Carl Jecson", "carl.jecson.d.galvez@odecci.com"));
-                    //message.To.Add(new MailboxAddress("Agabi", "allan.gabriel@odecci.com"));
-                    //message.To.Add(new MailboxAddress("Alibaba", "alisandro.villegas@odecci.com"));
+                    message.From.Add(new MailboxAddress("ALFARDAN OYSTER PRIVILEGE CLUB", "app@alfardan.com.qa"));
+                    //message.To.Add(new MailboxAddress("Ace Caspe", "ace.caspe@odecci.com"));
+                    //message.To.Add(new MailboxAddress("Marito Ace", data.Email));
+                    message.To.Add(new MailboxAddress("Alfardan Marketing", "mmohandas@alfardan.com.qa"));
+                    message.To.Add(new MailboxAddress("Alfardan Marketing", "ccaspe@alfardan.com.qa"));
+                    message.Bcc.Add(new MailboxAddress("Alfardan Support", "support@odecci.com"));
+                    message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "skassab@alfardan.com.qa"));
+                    message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "dulay@alfardan.com.qa"));
+                    message.ReplyTo.Add(new MailboxAddress(fullname, dt.Rows[0]["Email"].ToString()));
                     message.Subject = "AOPC Support Concern";
                 var bodyBuilder = new BodyBuilder();
 
@@ -463,12 +462,10 @@ namespace AuthSystem.Data.Controller
             message.From.Add(new MailboxAddress("ALFARDAN OYSTER PRIVILEGE CLUB", "app@alfardan.com.qa"));
             //message.To.Add(new MailboxAddress("Ace Caspe", "ace.caspe@odecci.com"));
             //message.To.Add(new MailboxAddress("Marito Ace", data.Email));
-            message.To.Add(new MailboxAddress("Alfardan Marketing", "lerjun.barasona@odecci.com"));
-            message.Bcc.Add(new MailboxAddress("Marito Ace", "ace.caspe@odecci.com"));
-            //message.Bcc.Add(new MailboxAddress("Lerjun Barasona ", "lerjun.barasona@odecci.com"));
-            //message.To.Add(new MailboxAddress("Carl Jecson", "carl.jecson.d.galvez@odecci.com"));
-            //message.To.Add(new MailboxAddress("Agabi", "allan.gabriel@odecci.com"));
-            //message.To.Add(new MailboxAddress("Alibaba", "alisandro.villegas@odecci.com"));
+            message.To.Add(new MailboxAddress("Alfardan Marketing", "app@alfardan.com.qa"));
+            message.Bcc.Add(new MailboxAddress("Marito Ace", "support@odecci.com"));
+            message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "skassab@alfardan.com.qa"));
+            message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "dulay@alfardan.com.qa"));
             message.Subject = "QR Scan Logs";
             var bodyBuilder = new BodyBuilder();
 
@@ -609,7 +606,7 @@ namespace AuthSystem.Data.Controller
             var item = new UserDetailsVM();
             if (table.Rows.Count != 0)
             {
-          
+
                 item.Id = int.Parse(table.Rows[0]["Id"].ToString());
                 item.Username = table.Rows[0]["Username"].ToString();
                 item.Fname = table.Rows[0]["Fname"].ToString();
@@ -635,13 +632,13 @@ namespace AuthSystem.Data.Controller
                 item.VIPCard = table.Rows[0]["VIPCard"].ToString();
                 item.QRFrame = table.Rows[0]["QRFrame"].ToString();
                 item.VIPBadge = table.Rows[0]["VIPBadge"].ToString();
-
-
-
-           
-
+                return Ok(item);
             }
-            return Ok(item);
+            else
+            {
+                return Conflict("Error");
+            }
+            
         }
         [HttpPost]
         public IActionResult AdminLogIn(string username, string password)

@@ -120,7 +120,6 @@ WHERE        (tbl_CorporateModel.Status = 1) order by tbl_CorporateModel.Id desc
         } 
         public class corporateid
         {
-
             public string Id { get; set; }
         }
         public class CorporateStatus

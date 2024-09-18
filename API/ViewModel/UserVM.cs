@@ -22,6 +22,7 @@ namespace AuthSystem.ViewModel
         public string Gender { get; set; }
 
         public string EmployeeID { get; set; }
+        public string MembershipID { get; set; }
 
         public string Position { get; set; }
 
