@@ -75,6 +75,69 @@ namespace API.Data.Controller
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllUserCount(string userName)
+        {
+            var result = new List<UserCountListing>();
+            UserCountListing item = new UserCountListing();
+            int CorporateId = 0;
+            int VIPCount = 0;
+            int activeVIP = 0;
+
+            string userSql = $@"select CorporateID from UsersModel where Username = '" + userName + "'";
+            DataTable table = db.SelectDb(userSql).Tables[0];
+            if(table.Rows.Count == 0)
+            {
+                return BadRequest("User Not Found");
+            }
+            else
+            {
+                foreach (DataRow dr in table.Rows)
+                {
+                    CorporateId = int.Parse(dr["CorporateID"].ToString());
+                }
+            }
+
+            string sql = $@"select COUNT(*) as count from UsersModel 
+                        where CorporateID = '" + CorporateId + "'";
+
+            string registeredCount = sql + " AND Active = '1' and isVIP = 0";
+            table = db.SelectDb(registeredCount).Tables[0];
+            foreach (DataRow dr in table.Rows)
+            {
+                item.registered = int.Parse(dr["count"].ToString());
+            }
+
+            string unregisteredCount = sql + " AND Active = '2'";
+            table = db.SelectDb(unregisteredCount).Tables[0];
+            foreach (DataRow dr in table.Rows)
+            {
+                item.unregistered = int.Parse(dr["count"].ToString());
+            }
+
+            string isVIP = sql + " AND Active = '1' and isVIP = 1";
+            table = db.SelectDb(isVIP).Tables[0];
+            foreach (DataRow dr in table.Rows)
+            {
+                activeVIP = int.Parse(dr["count"].ToString());
+                item.isVIP = activeVIP;
+            }
+
+            string vipCount = $@"select VipCount from tbl_CorporateModel where Id = '" + CorporateId + "'";
+            table = db.SelectDb(vipCount).Tables[0];
+            foreach (DataRow dr in table.Rows)
+            {
+                VIPCount = int.Parse(dr["VipCount"].ToString());
+                item.totalVIP = VIPCount;
+                item.remainingVIP = VIPCount - activeVIP;
+            }
+
+            result.Add(item);
+
+
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> UserCountWithFilter(UserListFilter data)
         {

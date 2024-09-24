@@ -201,6 +201,165 @@ namespace AuthSystem.Data.Controller
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetMostClickedHealthList()
+        {
+            GlobalVariables gv = new GlobalVariables();
+
+            string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Health' and tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
+                        GROUP BY    Business,Actions,Module order by count desc";
+            DataTable dt = db.SelectDb(sql).Tables[0];
+            int total = 0;
+            var result = new List<GenericMostClickModel>();
+            if (dt.Rows.Count != 0)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    total += int.Parse(dr["count"].ToString());
+                }
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var item = new GenericMostClickModel();
+                    item.Actions = dr["Actions"].ToString();
+                    item.Business = dr["Business"].ToString();
+                    item.Module = dr["Module"].ToString();
+                    //item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                    item.count = int.Parse(dr["count"].ToString());
+                    double val1 = double.Parse(dr["count"].ToString());
+                    double val2 = double.Parse(total.ToString());
+
+                    double results = Math.Abs(val1 / val2 * 100);
+                    item.Total = Math.Round(results, 2);
+                    result.Add(item);
+                }
+
+            }
+            else
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    var item = new GenericMostClickModel();
+                    item.Actions = "No Data";
+                    item.Business = "No Data";
+                    item.Module = "No Data";
+                    item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                    item.count = 0;
+                    item.Total = 0.00;
+                    result.Add(item);
+                }
+            }
+
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMostClickedWellnessList()
+        {
+            GlobalVariables gv = new GlobalVariables();
+
+            string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Wellness' and tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
+                        GROUP BY    Business,Actions,Module order by count desc";
+            DataTable dt = db.SelectDb(sql).Tables[0];
+            int total = 0;
+            var result = new List<GenericMostClickModel>();
+            if (dt.Rows.Count != 0)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    total += int.Parse(dr["count"].ToString());
+                }
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var item = new GenericMostClickModel();
+                    item.Actions = dr["Actions"].ToString();
+                    item.Business = dr["Business"].ToString();
+                    item.Module = dr["Module"].ToString();
+                    //item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                    item.count = int.Parse(dr["count"].ToString());
+                    double val1 = double.Parse(dr["count"].ToString());
+                    double val2 = double.Parse(total.ToString());
+
+                    double results = Math.Abs(val1 / val2 * 100);
+                    item.Total = Math.Round(results, 2);
+                    result.Add(item);
+                }
+
+            }
+            else
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    var item = new GenericMostClickModel();
+                    item.Actions = "No Data";
+                    item.Business = "No Data";
+                    item.Module = "No Data";
+                    item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                    item.count = 0;
+                    item.Total = 0.00;
+                    result.Add(item);
+                }
+            }
+
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMostClickedAccessToCoWorkingList()
+        {
+            GlobalVariables gv = new GlobalVariables();
+
+            string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Access to co-working spaces' and tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
+                        GROUP BY    Business,Actions,Module order by count desc";
+            DataTable dt = db.SelectDb(sql).Tables[0];
+            int total = 0;
+            var result = new List<GenericMostClickModel>();
+            if (dt.Rows.Count != 0)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    total += int.Parse(dr["count"].ToString());
+                }
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var item = new GenericMostClickModel();
+                    item.Actions = dr["Actions"].ToString();
+                    item.Business = dr["Business"].ToString();
+                    item.Module = dr["Module"].ToString();
+                    //item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                    item.count = int.Parse(dr["count"].ToString());
+                    double val1 = double.Parse(dr["count"].ToString());
+                    double val2 = double.Parse(total.ToString());
+
+                    double results = Math.Abs(val1 / val2 * 100);
+                    item.Total = Math.Round(results, 2);
+                    result.Add(item);
+                }
+
+            }
+            else
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    var item = new GenericMostClickModel();
+                    item.Actions = "No Data";
+                    item.Business = "No Data";
+                    item.Module = "No Data";
+                    item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                    item.count = 0;
+                    item.Total = 0.00;
+                    result.Add(item);
+                }
+            }
+
+
+            return Ok(result);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetMostClickRestaurantList()
         {
             GlobalVariables gv = new GlobalVariables();
@@ -552,6 +711,198 @@ namespace AuthSystem.Data.Controller
                     for (int x = 0; x < 4; x++)
                     {
                         var item = new MostClickRestoModel();
+                        item.Actions = "No Data";
+                        item.Business = "No Data";
+                        item.Module = "No Data";
+                        item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                        item.count = 0;
+                        item.Total = 0.00;
+                        result.Add(item);
+                    }
+
+                }
+                return Ok(result);
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest("ERROR");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PostMostClickWellnessList(UserFilterday data)
+        {
+            //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            try
+            {
+
+                string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Wellness' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
+                        "GROUP BY    Business,Actions,Module order by count desc";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                var result = new List<GenericMostClickModel>();
+                int total = 0;
+                if (dt.Rows.Count > 0)
+                {
+
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        total += int.Parse(dr["count"].ToString());
+                    }
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        var item = new GenericMostClickModel();
+                        item.Actions = dr["Actions"].ToString();
+                        item.Business = dr["Business"].ToString();
+                        item.Module = dr["Module"].ToString();
+                        //item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                        item.count = int.Parse(dr["count"].ToString());
+                        double val1 = double.Parse(dr["count"].ToString());
+                        double val2 = double.Parse(total.ToString());
+
+                        double results = Math.Abs(val1 / val2 * 100);
+                        item.Total = Math.Round(results, 2);
+                        result.Add(item);
+                    }
+
+
+                }
+                else
+                {
+                    for (int x = 0; x < 4; x++)
+                    {
+                        var item = new GenericMostClickModel();
+                        item.Actions = "No Data";
+                        item.Business = "No Data";
+                        item.Module = "No Data";
+                        item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                        item.count = 0;
+                        item.Total = 0.00;
+                        result.Add(item);
+                    }
+
+                }
+                return Ok(result);
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest("ERROR");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PostMostClickHealthList(UserFilterday data)
+        {
+            //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            try
+            {
+
+                string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Health' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
+                        "GROUP BY    Business,Actions,Module order by count desc";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                var result = new List<GenericMostClickModel>();
+                int total = 0;
+                if (dt.Rows.Count > 0)
+                {
+
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        total += int.Parse(dr["count"].ToString());
+                    }
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        var item = new GenericMostClickModel();
+                        item.Actions = dr["Actions"].ToString();
+                        item.Business = dr["Business"].ToString();
+                        item.Module = dr["Module"].ToString();
+                        //item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                        item.count = int.Parse(dr["count"].ToString());
+                        double val1 = double.Parse(dr["count"].ToString());
+                        double val2 = double.Parse(total.ToString());
+
+                        double results = Math.Abs(val1 / val2 * 100);
+                        item.Total = Math.Round(results, 2);
+                        result.Add(item);
+                    }
+
+
+                }
+                else
+                {
+                    for (int x = 0; x < 4; x++)
+                    {
+                        var item = new GenericMostClickModel();
+                        item.Actions = "No Data";
+                        item.Business = "No Data";
+                        item.Module = "No Data";
+                        item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                        item.count = 0;
+                        item.Total = 0.00;
+                        result.Add(item);
+                    }
+
+                }
+                return Ok(result);
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest("ERROR");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PostMostClickAccessToCoWorkingList(UserFilterday data)
+        {
+            //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            try
+            {
+
+                string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Access to co-working spaces' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
+                        "GROUP BY    Business,Actions,Module order by count desc";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                var result = new List<GenericMostClickModel>();
+                int total = 0;
+                if (dt.Rows.Count > 0)
+                {
+
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        total += int.Parse(dr["count"].ToString());
+                    }
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        var item = new GenericMostClickModel();
+                        item.Actions = dr["Actions"].ToString();
+                        item.Business = dr["Business"].ToString();
+                        item.Module = dr["Module"].ToString();
+                        //item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                        item.count = int.Parse(dr["count"].ToString());
+                        double val1 = double.Parse(dr["count"].ToString());
+                        double val2 = double.Parse(total.ToString());
+
+                        double results = Math.Abs(val1 / val2 * 100);
+                        item.Total = Math.Round(results, 2);
+                        result.Add(item);
+                    }
+
+
+                }
+                else
+                {
+                    for (int x = 0; x < 4; x++)
+                    {
+                        var item = new GenericMostClickModel();
                         item.Actions = "No Data";
                         item.Business = "No Data";
                         item.Module = "No Data";
@@ -997,6 +1348,18 @@ namespace AuthSystem.Data.Controller
             public double Total { get; set; }
 
         }
+
+        public class GenericMostClickModel
+        {
+            public string Actions { get; set; }
+            public string Business { get; set; }
+            public string Module { get; set; }
+            public string DateCreated { get; set; }
+            public int count { get; set; }
+            public double Total { get; set; }
+
+        }
+
         public class SupportDetailModel
         {
             public int Id { get; set; }
