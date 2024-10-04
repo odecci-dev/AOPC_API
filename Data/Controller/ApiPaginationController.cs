@@ -1,4 +1,5 @@
-﻿using AuthSystem.Manager;
+﻿using API.ViewModel;
+using AuthSystem.Manager;
 using AuthSystem.Models;
 using AuthSystem.Services;
 using AuthSystem.ViewModel;
@@ -83,6 +84,20 @@ namespace AuthSystem.Data.Controller
             public string? TotalRecord { get; set; }
             public string? TotalVIP { get; set; }
             public List<UserVM> items { get; set; }
+
+
+        }
+
+        public class PaginationCorpUserCountModel
+        {
+            public string? CurrentPage { get; set; }
+            public string? NextPage { get; set; }
+            public string? PrevPage { get; set; }
+            public string? TotalPage { get; set; }
+            public string? PageSize { get; set; }
+            public string? TotalRecord { get; set; }
+            public string? TotalVIP { get; set; }
+            public List<CorporateUserCountVM> items { get; set; }
 
 
         }

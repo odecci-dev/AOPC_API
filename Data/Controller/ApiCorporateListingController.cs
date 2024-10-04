@@ -9,6 +9,9 @@ using System.Data;
 using API.ViewModel;
 using Microsoft.EntityFrameworkCore;
 using static AuthSystem.Data.Controller.ApiPaginationController;
+using MimeKit;
+using MailKit.Net.Smtp;
+using static AuthSystem.Data.Controller.ApiUserAcessController;
 
 namespace API.Data.Controller
 {
@@ -205,6 +208,24 @@ namespace API.Data.Controller
             return Ok(result);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UnregisteredList(UnregisteredUserFilter data)
+        {
+            string sql = $@"select Coalesce(Fullname, Concat (Fname + ' ',Lname)) Name,Email from UsersModel where Active = '6' and CorporateId = '" + data.Corporateid + "'";
+            DataTable dt = db.SelectDb(sql).Tables[0];
+            var result = new List<UnregisteredResult>();
+            foreach (DataRow dr in dt.Rows)
+            {
+                var item = new UnregisteredResult();
+                item.Name = dr["Name"].ToString();
+                item.Email = dr["Email"].ToString();
+                result.Add(item);
+            }
+            
+            return Ok(result);
+        }
+
+
         public class UserListFilter
         {
             public string Corporatename { get; set; }
@@ -212,6 +233,169 @@ namespace API.Data.Controller
             public string? FilterName { get; set; }
             public int page { get; set; }
         }
-        
+
+        public class UserCountFilter
+        {
+            public string Corporatename { get; set; }
+            public int page { get; set; }
+        }
+        public class UnregisteredUserFilter
+        {
+            public string Corporateid { get; set; }
+        }
+        public class UnregisteredResult
+        {
+            public string Name { get; set; }
+            public string Email { get; set; }
+        }
+
+        public class UnregisteredUserEmailRequest
+        {
+            public string Body { get; set; }
+            public List<UserListModel> UserList { get; set; }
+        }
+
+        public class UserListModel
+        {
+            public string Name { get; set; }
+            public string Email { get; set; }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> EmailUnregisterUser(UnregisteredUserEmailRequest data)
+        {
+            for (int x=0; x < data.UserList.Count; x++)
+            {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("ALFARDAN OYSTER PRIVILEGE CLUB", "app@alfardan.com.qa"));
+                //message.To.Add(new MailboxAddress("Ace Caspe", "ace.caspe@odecci.com"));
+                //message.To.Add(new MailboxAddress("Marito Ace", data.Email));
+                message.To.Add(new MailboxAddress(data.UserList[x].Name, data.UserList[x].Email));
+                //message.Bcc.Add(new MailboxAddress("Marito Ace", "support@odecci.com"));
+                //message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "skassab@alfardan.com.qa"));
+                //message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "dulay@alfardan.com.qa"));
+                message.Subject = "Test Only";
+                var bodyBuilder = new BodyBuilder();
+
+                bodyBuilder.HtmlBody = @" <style>
+    body {
+      margin: 0;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: ""Montserrat"";
+    }
+    @font-face {
+      font-family: ""Montserrat"";
+      src: url(""https://www.alfardanoysterprivilegeclub.com/build/assets/Montserrat-Regular-dcfe8df2.ttf"");
+    }
+    .header {
+      width: 200px;
+      height: 120px;
+      overflow: hidden;
+      margin: 50px auto;
+    }
+    .body {
+      width: 500px;
+      margin: 5px auto;
+      font-size: 13px;
+    }
+    .body p {
+      margin: 20px 0;
+    }
+    ul li {
+      list-style: none;
+    }
+    .footer {
+      width: 500px;
+      margin: 20px auto;
+      font-size: 13px;
+    }
+    .citation span {
+      color: #c89328;
+    }
+    .body span {
+      color: #c89328;
+    }
+  </style>
+  <body>
+    <div class=""header"">
+      <img
+        src="" https://www.alfardanoysterprivilegeclub.com/assets/img/AOPC-Black.png""
+        alt=""Alfardan Oyster Privilege Club""
+        width=""100%""
+      />
+    </div>
+    <div class=""body"">
+      <p class=citation>Dear <span> Admin </span></p>
+      <p class=body>
+         " + data.Body + " </span>.</p><p class=body> " +
+    " </div> <p class=footer>Regards, <br />" +
+     " <br /> " +
+     "Alfardan Oyster Privilege Club App " +
+     "</p>" +
+     "</body>";
+                message.Body = bodyBuilder.ToMessageBody();
+                using (var client = new SmtpClient())
+                {
+                    await client.ConnectAsync("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync("app@alfardan.com.qa", "Oyster2023!");
+                    await client.SendAsync(message);
+                    await client.DisconnectAsync(true);
+
+                }
+            }
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CorporateUserCount(UserCountFilter data)
+        {
+
+            int pageSize = 10;
+            //var model_result = (dynamic)null;
+            var items = (dynamic)null;
+            int totalItems = 0;
+            int totalPages = 0;
+            int totalVIP = 0;
+            string page_size = pageSize == 0 ? "10" : pageSize.ToString();
+
+            if (data.Corporatename.Equals(""))
+            {
+                var Member = dbmet.GetUserCountPerCorporate().ToList();
+                totalItems = Member.Count;
+                totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+                items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
+            }
+            else
+            {
+                var Member = dbmet.GetUserCountPerCorporate().Where(a => a.CorporateName.ToLower() == data.Corporatename.ToLower()).ToList();
+                totalItems = Member.Count;
+                totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+                items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
+            }
+
+            var result = new List<PaginationCorpUserCountModel>();
+            var item = new PaginationCorpUserCountModel();
+            int pages = data.page == 0 ? 1 : data.page;
+            item.CurrentPage = data.page == 0 ? "1" : data.page.ToString();
+
+            int page_prev = pages - 1;
+            //int t_record = int.Parse(items.Count.ToString()) / int.Parse(page_size);
+
+            double t_records = Math.Ceiling(double.Parse(totalItems.ToString()) / double.Parse(page_size));
+            int page_next = data.page >= t_records ? 0 : pages + 1;
+            item.NextPage = items.Count % int.Parse(page_size) >= 0 ? page_next.ToString() : "0";
+            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+            item.TotalPage = t_records.ToString();
+            item.PageSize = page_size;
+            item.TotalVIP = totalVIP.ToString();
+            item.TotalRecord = totalItems.ToString();
+            item.items = items;
+            result.Add(item);
+
+            return Ok(result);
+        }
     }
 }
