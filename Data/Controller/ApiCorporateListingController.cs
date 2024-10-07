@@ -78,8 +78,8 @@ namespace API.Data.Controller
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllUserCount(string userName)
+        [HttpPost]
+        public async Task<IActionResult> GetAllUserCount(UsersCountFilter data)
         {
             var result = new List<UserCountListing>();
             UserCountListing item = new UserCountListing();
@@ -87,7 +87,7 @@ namespace API.Data.Controller
             int VIPCount = 0;
             int activeVIP = 0;
 
-            string userSql = $@"select CorporateID from UsersModel where Username = '" + userName + "'";
+            string userSql = $@"select CorporateID from UsersModel where Username = '" + data.userName + "'";
             DataTable table = db.SelectDb(userSql).Tables[0];
             if(table.Rows.Count == 0)
             {
@@ -225,6 +225,10 @@ namespace API.Data.Controller
             return Ok(result);
         }
 
+        public class UsersCountFilter
+        {
+            public string userName { get; set; }
+        }
 
         public class UserListFilter
         {
