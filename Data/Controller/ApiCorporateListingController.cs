@@ -374,7 +374,7 @@ namespace API.Data.Controller
             }
             else
             {
-                var Member = dbmet.GetUserCountPerCorporate().Where(a => a.CorporateName.ToLower() == data.Corporatename.ToLower()).ToList();
+                var Member = dbmet.GetUserCountPerCorporate().Where(a => a.CorporateName.ToLower().Contains(data.Corporatename.ToLower())).ToList();
                 totalItems = Member.Count;
                 totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
                 items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
