@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Text;
+using static API.Data.Controller.ApiCorporateListingController;
 using static AuthSystem.Data.Controller.ApiAuditTrailController;
 using static AuthSystem.Data.Controller.ApiNotifcationController;
 using static AuthSystem.Data.Controller.ApiPaginationController;
@@ -302,6 +303,7 @@ ORDER BY tbl_VendorModel.Id DESC";
             left join (select Id,Coalesce(VipCount,0) 'Count',Count 'UserCount' from tbl_CorporateModel)TotVIP on Corp.Id = TotVIP.Id";
             var result = new List<CorporateUserCountVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
+
 
             foreach (DataRow dr in table.Rows)
             {

@@ -22,6 +22,9 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.AspNetCore.Components.Forms;
 using static AuthSystem.Data.Controller.ApiAuditTrailController;
+using MimeKit;
+using static API.Data.Controller.ApiCorporateListingController;
+using MailKit.Net.Smtp;
 
 namespace AuthSystem.Data.Controller
 {
@@ -197,7 +200,115 @@ namespace AuthSystem.Data.Controller
 
             return Ok(result);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> EmailCorporate(CorporateNotificationEmailRequest data)
+        {
+            for (int x = 0; x < data.CorporateList.Count; x++)
+            {
+                string email = "";
+                string sql = $@"SELECT EmailAddress from tbl_CorporateModel where CorporateName = '" + data.CorporateList[x].CorporateName + "'";
+                DataTable table = db.SelectDb(sql).Tables[0];
+                foreach(DataRow dr in table.Rows)
+                {
+                    email =  dr["EmailAddress"].ToString();
+                }
+
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("ALFARDAN OYSTER PRIVILEGE CLUB", "app@alfardan.com.qa"));
+                //message.To.Add(new MailboxAddress("Ace Caspe", "ace.caspe@odecci.com"));
+                //message.To.Add(new MailboxAddress("Marito Ace", data.Email));
+                message.To.Add(new MailboxAddress(data.CorporateList[x].CorporateName, email));
+                //message.Bcc.Add(new MailboxAddress("Marito Ace", "support@odecci.com"));
+                //message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "skassab@alfardan.com.qa"));
+                //message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "dulay@alfardan.com.qa"));
+                message.Subject = data.Subject;
+                var bodyBuilder = new BodyBuilder();
+
+                bodyBuilder.HtmlBody = @" <style>
+    body {
+      margin: 0;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: ""Montserrat"";
+    }
+    @font-face {
+      font-family: ""Montserrat"";
+      src: url(""https://www.alfardanoysterprivilegeclub.com/build/assets/Montserrat-Regular-dcfe8df2.ttf"");
+    }
+    .header {
+      width: 200px;
+      height: 120px;
+      overflow: hidden;
+      margin: 50px auto;
+    }
+    .body {
+      width: 500px;
+      margin: 5px auto;
+      font-size: 13px;
+    }
+    .body p {
+      margin: 20px 0;
+    }
+    ul li {
+      list-style: none;
+    }
+    .footer {
+      width: 500px;
+      margin: 20px auto;
+      font-size: 13px;
+    }
+    .citation span {
+      color: #c89328;
+    }
+    .body span {
+      color: #c89328;
+    }
+  </style>
+  <body>
+    <div class=""header"">
+      <img
+        src="" https://www.alfardanoysterprivilegeclub.com/assets/img/AOPC-Black.png""
+        alt=""Alfardan Oyster Privilege Club""
+        width=""100%""
+      />
+    </div>
+    <div class=""body"">
+      <p class=citation>Dear <span> Admin </span></p>
+      <p class=body>
+         " + data.Body + " </span>.</p><p class=body> " +
+    " </div> <p class=footer>Regards, <br />" +
+     " <br /> " +
+     "Alfardan Oyster Privilege Club App " +
+     "</p>" +
+     "</body>";
+                message.Body = bodyBuilder.ToMessageBody();
+                using (var client = new SmtpClient())
+                {
+                    await client.ConnectAsync("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync("app@alfardan.com.qa", "Oyster2023!");
+                    await client.SendAsync(message);
+                    await client.DisconnectAsync(true);
+
+                }
+            }
+            return Ok();
+        }
+
         #region Model
+
+        public class CorporateNotificationEmailRequest
+        {
+            public string Body { get; set; }
+            public string Subject { get; set; }
+            public List<CorporateListModel> CorporateList { get; set; }
+
+        }
+        public class CorporateListModel
+        {
+            public string CorporateName { get; set; }
+        }
         public class NotificationModel
         {
 

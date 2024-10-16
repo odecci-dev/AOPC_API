@@ -27,6 +27,7 @@ using System.Security.Cryptography;
 using System.Net;
 using API.Models;
 using CMS.Models;
+using Org.BouncyCastle.Asn1.Mozilla;
 
 namespace AuthSystem.Data.Controller
 {
@@ -1254,6 +1255,172 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
             {
                 return ex.Message;
             }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<FamilyMemberModel>> SaveFamilyMember(FamilyMemberModel famMember)
+        {
+            if (_context.tbl_FamilyMember == null)
+            {
+                return Problem("Entity set '_context.tbl_FamilyMember'  is null.");
+            }
+            bool hasDuplicateOnSave = (_context.tbl_FamilyMember?.Any(familyMember => familyMember.Fullname == famMember.Fullname && familyMember.FamilyUserId == famMember.FamilyUserId)).GetValueOrDefault();
+
+
+            if (hasDuplicateOnSave)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            try
+            {
+                _context.tbl_FamilyMember.Add(famMember);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("SaveFamilyMember", new { id = famMember.Id }, famMember);
+            }
+            catch (Exception ex)
+            {
+
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<FamilyMemberpagedModel>>> ListFamilyMember(FamMemberRequest searchFilter)
+        {
+
+            try
+            {
+                List<FamilyMemberModel> famMemberList = await buildFamMemberSearchQuery(searchFilter).ToListAsync();
+                var result = buildBirthTypesPagedModel(searchFilter, famMemberList);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        public class FamMemberRequest
+        {
+            public int FamilyUserId { get; set; }
+            public int page { get; set; }
+            public int pageSize { get; set; }
+        }
+        private IQueryable<FamilyMemberModel> buildFamMemberSearchQuery(FamMemberRequest searchFilter)
+        {
+            IQueryable<FamilyMemberModel> query = _context.tbl_FamilyMember.Where(fam => fam.Status == 1);
+            if (searchFilter.FamilyUserId != 0)
+                query = query.Where(fam => fam.FamilyUserId.Equals(searchFilter.FamilyUserId));
+
+            return query;
+        }
+
+        private List<FamilyMemberpagedModel> buildBirthTypesPagedModel(FamMemberRequest searchFilter, List<FamilyMemberModel> FamMember)
+        {
+            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
+            int page = searchFilter.page == 0 ? 1 : searchFilter.page;
+            var items = (dynamic)null;
+            int totalItems = 0;
+            int totalPages = 0;
+
+            totalItems = FamMember.Count;
+            totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
+            items = FamMember.Skip((page - 1) * pagesize).Take(pagesize).ToList();
+
+            var result = new List<FamilyMemberpagedModel>();
+            var item = new FamilyMemberpagedModel();
+
+            int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
+            item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
+            int page_prev = pages - 1;
+
+            double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
+            int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
+            item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
+            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+            item.TotalPage = t_records.ToString();
+            item.PageSize = pagesize.ToString();
+            item.TotalRecord = totalItems.ToString();
+            item.data = FamMember;
+            result.Add(item);
+
+            return result;
+        }
+        [HttpPost]
+        public async Task<IActionResult> deleteFamilyMember(DeletionModel deletionModel)
+        {
+
+            if (_context.tbl_FamilyMember == null)
+            {
+                return Problem("Entity set '_context.tbl_FamilyMember' is null!");
+            }
+
+            var famMember = await _context.tbl_FamilyMember.FindAsync(deletionModel.id);
+            if (famMember == null || famMember.Status == 0)
+            {
+                return Conflict("No records matched!");
+            }
+
+            try
+            {
+                famMember.Status = 0;
+                //famMember.DateDeleted = DateTime.Now;
+                _context.Entry(famMember).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Deletion Successful!");
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> update(int id, FamilyMemberModel famMember)
+        {
+            if (_context.tbl_FamilyMember == null)
+            {
+                return Problem("Entity set '_context.tbl_FamilyMember' is null!");
+            }
+
+            var family = _context.tbl_FamilyMember.AsNoTracking().Where(fam => fam.Status == 1 && fam.Id == id).FirstOrDefault();
+
+            if (family == null)
+            {
+                return Conflict("No records matched!");
+            }
+
+            if (id != family.Id)
+            {
+                return Conflict("Ids mismatched!");
+            }
+
+            bool hasDuplicateOnUpdate = (_context.tbl_FamilyMember?.Any(fam => fam.Status == 1 && fam.Fullname == famMember.Fullname && fam.FamilyUserId == famMember.FamilyUserId && fam.Id != id)).GetValueOrDefault();
+
+            // check for duplication
+            if (hasDuplicateOnUpdate)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            try
+            {
+                _context.Entry(famMember).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok("Update Successful!");
+            }
+            catch (Exception ex)
+            {
+
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        public class DeletionModel
+        {
+            public int id { get; set; }
         }
     }
 }
