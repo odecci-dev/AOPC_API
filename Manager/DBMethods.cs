@@ -179,7 +179,7 @@ ORDER BY tbl_VendorModel.Id DESC";
             return result;
         }
 
-        public List<UserVM> GetCorporateAdminUserListv2(paginateCorpUser data)
+        public List<UserVM> GetCorporateAdminUserListv2(paginateCorpUserv2 data)
         {
 
 
@@ -194,27 +194,27 @@ ORDER BY tbl_VendorModel.Id DESC";
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
                          WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 3)";
 
-            if(data.CorpId != "")
+            if(data.CorpId != null)
             {
                 sql += " AND CorporateID = " + data.CorpId;
             }
-            if (data.PosId != "")
+            if (data.PosId != null)
             {
                 sql += " AND tbl_PositionModel.Id = " + data.PosId;
             }
-            if (data.Gender != "")
+            if (data.Gender != null)
             {
                 sql += " AND UsersModel.Gender = '" + data.Gender + "'";
             }
-            if (data.isVIP != "")
+            if (data.isVIP != null)
             {
                 sql += " AND UsersModel.isVIP = " + data.isVIP;
             }
-            if(data.Status != "")
+            if(data.Status != null)
             {
                 sql += " AND tbl_StatusModel.Name = '" + data.Status + "'";
             }
-            if (data.FilterName != "")
+            if (data.FilterName != null)
             {
                 sql += " AND (UsersModel.Fname like '%" + data.FilterName + "%' or UsersModel.Lname like '%" + data.FilterName + "%')";
             }

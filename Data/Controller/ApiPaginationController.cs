@@ -292,13 +292,21 @@ namespace AuthSystem.Data.Controller
             }
         }
 
-        public class paginateCorpUser
+        public class paginateCorpUserv2
         {
             public string? CorpId { get; set; }
             public string? PosId { get; set; }
             public string? Gender { get; set; }
             public string? isVIP { get; set; }
             public string? Status { get; set; }
+            public string? FilterName { get; set; }
+            public int page { get; set; }
+        }
+
+        public class paginateCorpUser
+        {
+            public string? CorpId { get; set; }
+            public string? PosId { get; set; }
             public string? FilterName { get; set; }
             public int page { get; set; }
         }
@@ -394,7 +402,7 @@ namespace AuthSystem.Data.Controller
 
 
         [HttpPost]
-        public async Task<IActionResult> DisplayRegistrationList(paginateCorpUser data)
+        public async Task<IActionResult> DisplayRegistrationList(paginateCorpUserv2 data)
         {
 
 

@@ -28,6 +28,7 @@ using System.Net;
 using API.Models;
 using CMS.Models;
 using Org.BouncyCastle.Asn1.Mozilla;
+using static AuthSystem.Data.Controller.ApiPaginationController;
 
 namespace AuthSystem.Data.Controller
 {
@@ -101,8 +102,8 @@ namespace AuthSystem.Data.Controller
 
             return Ok(item);
         }
-        [HttpGet]
-        public async Task<IActionResult> Corporatelist()
+        [HttpPost]
+        public async Task<IActionResult> Corporatelist(paginateCorpUserv2 data)
         {
             GlobalVariables gv = new GlobalVariables();
             string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
@@ -113,7 +114,34 @@ FROM            UsersModel INNER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2) order by Fname";
+WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)";
+
+
+            if (data.CorpId != null)
+            {
+                sql += " AND tbl_CorporateModel.Id = " + data.CorpId;
+            }
+            if (data.PosId != null)
+            {
+                sql += " AND tbl_PositionModel.Id = " + data.PosId;
+            }
+            if (data.Gender != null)
+            {
+                sql += " AND UsersModel.Gender = '" + data.Gender + "'";
+            }
+            if (data.isVIP != null)
+            {
+                sql += " AND UsersModel.isVIP = " + data.isVIP;
+            }
+            if (data.Status != null)
+            {
+                sql += " AND tbl_StatusModel.Name = '" + data.Status + "'";
+            }
+            if (data.FilterName != null)
+            {
+                sql += " AND (UsersModel.Fname like '%" + data.FilterName + "%' or UsersModel.Lname like '%" + data.FilterName + "%')";
+            }
+
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 

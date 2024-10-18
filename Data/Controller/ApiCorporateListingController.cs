@@ -211,7 +211,16 @@ namespace API.Data.Controller
         [HttpPost]
         public async Task<IActionResult> UnregisteredList(UnregisteredUserFilter data)
         {
-            string sql = $@"select Coalesce(Fullname, Concat (Fname + ' ',Lname)) Name,Email from UsersModel where Active = '6' and CorporateId = '" + data.Corporateid + "'";
+
+            string sql;
+            if (data.name == null)
+            {
+                sql = $@"select Coalesce(Fullname, Concat (Fname + ' ',Lname)) Name,Email from UsersModel where Active = '6'";
+            }
+            else
+            {
+                sql = $@"select Coalesce(Fullname, Concat (Fname + ' ',Lname)) Name,Email from UsersModel where Active = '6' and  Concat (Fname + ' ',Lname) like '%" + data.name + "%'";
+            }
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<UnregisteredResult>();
             foreach (DataRow dr in dt.Rows)
@@ -240,12 +249,12 @@ namespace API.Data.Controller
 
         public class UserCountFilter
         {
-            public string Corporatename { get; set; }
+            public string? Corporatename { get; set; }
             public int page { get; set; }
         }
         public class UnregisteredUserFilter
         {
-            public string Corporateid { get; set; }
+            public string? name { get; set; }
         }
         public class UnregisteredResult
         {
@@ -256,7 +265,9 @@ namespace API.Data.Controller
         public class UnregisteredUserEmailRequest
         {
             public string Body { get; set; }
-            public List<UserListModel> UserList { get; set; }
+            public string[] Name { get; set; }
+            public string[] Email { get; set; }
+            //public List<UserListModel> UserList { get; set; }
         }
 
         public class UserListModel
@@ -269,13 +280,13 @@ namespace API.Data.Controller
         [HttpPost]
         public async Task<IActionResult> EmailUnregisterUser(UnregisteredUserEmailRequest data)
         {
-            for (int x=0; x < data.UserList.Count; x++)
+            for (int x=0; x < data.Email.Length; x++)
             {
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress("ALFARDAN OYSTER PRIVILEGE CLUB", "app@alfardan.com.qa"));
                 //message.To.Add(new MailboxAddress("Ace Caspe", "ace.caspe@odecci.com"));
                 //message.To.Add(new MailboxAddress("Marito Ace", data.Email));
-                message.To.Add(new MailboxAddress(data.UserList[x].Name, data.UserList[x].Email));
+                message.To.Add(new MailboxAddress(data.Name[x], data.Email[x]));
                 //message.Bcc.Add(new MailboxAddress("Marito Ace", "support@odecci.com"));
                 //message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "skassab@alfardan.com.qa"));
                 //message.Bcc.Add(new MailboxAddress("Alfardan Marketing", "dulay@alfardan.com.qa"));
@@ -365,7 +376,7 @@ namespace API.Data.Controller
             int totalVIP = 0;
             string page_size = pageSize == 0 ? "10" : pageSize.ToString();
 
-            if (data.Corporatename.Equals(""))
+            if (data.Corporatename == null)
             {
                 var Member = dbmet.GetUserCountPerCorporate().ToList();
                 totalItems = Member.Count;
