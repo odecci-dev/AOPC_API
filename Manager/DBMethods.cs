@@ -322,5 +322,72 @@ ORDER BY tbl_VendorModel.Id DESC";
             return result;
         }
 
+        public List<UserVM> GetCorporateList(paginateCorpUserv2 data)
+        {
+            string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
+                         tbl_UserTypeModel.UserType, UsersModel.Fullname, UsersModel.Id, UsersModel.DateCreated, tbl_PositionModel.Id AS PositionID, tbl_CorporateModel.Id AS CorporateID, tbl_StatusModel.Name AS status, UsersModel.isVIP, 
+                         UsersModel.FilePath
+FROM            UsersModel INNER JOIN
+                         tbl_CorporateModel ON UsersModel.CorporateID = tbl_CorporateModel.Id LEFT OUTER JOIN
+                         tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
+                         tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
+                         tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
+WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)";
+
+
+            if (data.CorpId != null)
+            {
+                sql += " AND tbl_CorporateModel.Id = " + data.CorpId;
+            }
+            if (data.PosId != null)
+            {
+                sql += " AND tbl_PositionModel.Id = " + data.PosId;
+            }
+            if (data.Gender != null)
+            {
+                sql += " AND UsersModel.Gender = '" + data.Gender + "'";
+            }
+            if (data.isVIP != null)
+            {
+                sql += " AND UsersModel.isVIP = " + data.isVIP;
+            }
+            if (data.Status != null)
+            {
+                sql += " AND tbl_StatusModel.Name = '" + data.Status + "'";
+            }
+            if (data.FilterName != null)
+            {
+                sql += " AND (UsersModel.Fname like '%" + data.FilterName + "%' or UsersModel.Lname like '%" + data.FilterName + "%')";
+            }
+
+            var result = new List<UserVM>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new UserVM();
+                item.Id = int.Parse(dr["id"].ToString());
+                item.Fullname = dr["Fname"].ToString() + " " + dr["Lname"].ToString();
+                item.Username = dr["Username"].ToString();
+                item.Fname = dr["Fname"].ToString();
+                item.Lname = dr["Lname"].ToString();
+                item.Email = dr["Email"].ToString();
+                item.Gender = dr["Gender"].ToString();
+                item.EmployeeID = dr["EmployeeID"].ToString();
+                item.Position = dr["Position"].ToString();
+                item.Corporatename = dr["Corporatename"].ToString();
+                item.UserType = dr["UserType"].ToString();
+                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
+                item.CorporateID = dr["CorporateID"].ToString();
+                item.PositionID = dr["PositionID"].ToString();
+                item.status = dr["status"].ToString();
+                item.FilePath = dr["FilePath"].ToString();
+                item.FilePath = dr["FilePath"].ToString();
+                item.isVIP = dr["isVIP"].ToString();
+                result.Add(item);
+            }
+
+            return result;
+        }
     }
 }
