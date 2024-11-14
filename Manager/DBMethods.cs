@@ -309,7 +309,7 @@ ORDER BY tbl_VendorModel.Id DESC";
             {
                 var item = new CorporateUserCountVM();
                 item.CorporateName = dr["CorporateName"].ToString();
-                item.Registerded = dr["Registered"].ToString();
+                item.Registered = dr["Registered"].ToString();
                 item.Unregistered = dr["Unregistered"].ToString();
                 item.RegisteredVIP = dr["Registered VIP"].ToString();
                 item.TotalVIP = dr["Total VIP Count"].ToString();
@@ -335,30 +335,30 @@ FROM            UsersModel INNER JOIN
 WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)";
 
 
-            if (data.CorpId != null)
-            {
-                sql += " AND tbl_CorporateModel.Id = " + data.CorpId;
-            }
-            if (data.PosId != null)
-            {
-                sql += " AND tbl_PositionModel.Id = " + data.PosId;
-            }
-            if (data.Gender != null)
-            {
-                sql += " AND UsersModel.Gender = '" + data.Gender + "'";
-            }
-            if (data.isVIP != null)
-            {
-                sql += " AND UsersModel.isVIP = " + data.isVIP;
-            }
-            if (data.Status != null)
-            {
-                sql += " AND tbl_StatusModel.Name = '" + data.Status + "'";
-            }
-            if (data.FilterName != null)
-            {
-                sql += " AND (UsersModel.Fname like '%" + data.FilterName + "%' or UsersModel.Lname like '%" + data.FilterName + "%')";
-            }
+            //if (data.CorpId != null)
+            //{
+            //    sql += " AND tbl_CorporateModel.Id = " + data.CorpId;
+            //}
+            //if (data.PosId != null)
+            //{
+            //    sql += " AND tbl_PositionModel.Id = " + data.PosId;
+            //}
+            //if (data.Gender != null)
+            //{
+            //    sql += " AND UsersModel.Gender = '" + data.Gender + "'";
+            //}
+            //if (data.isVIP != null)
+            //{
+            //    sql += " AND UsersModel.isVIP = " + data.isVIP;
+            //}
+            //if (data.Status != null)
+            //{
+            //    sql += " AND tbl_StatusModel.Name = '" + data.Status + "'";
+            //}
+            //if (data.FilterName != null)
+            //{
+            //    sql += " AND (UsersModel.Fname like '%" + data.FilterName + "%' or UsersModel.Lname like '%" + data.FilterName + "%')";
+            //}
 
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
@@ -387,6 +387,23 @@ WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)";
                 result.Add(item);
             }
 
+            return result;
+        }
+        public List<CorporateNotificationData> GetCompanyUserDetails(string company)
+        {
+            string sql = $@"SELECT EmployeeId,CompanyID from UsersModel 
+left join tbl_CorporateModel on CorporateID = tbl_CorporateModel.Id
+where tbl_CorporateModel.CorporateName =  '" + company + "'";
+            var result = new List<CorporateNotificationData>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new CorporateNotificationData();
+                item.EmployeeID = dr["EmployeeId"].ToString();
+                item.CompanyID = dr["CompanyID"].ToString();
+
+                result.Add(item);
+            }
             return result;
         }
     }

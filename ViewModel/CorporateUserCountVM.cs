@@ -3,7 +3,7 @@
     public class CorporateUserCountVM
     {
         public string CorporateName { get; set; }
-        public string Registerded {get; set; }
+        public string Registered {get; set; }
         public string Unregistered { get; set; }
         public string RegisteredVIP { get; set; }
         public string TotalVIP { get; set; }
