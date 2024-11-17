@@ -1144,6 +1144,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
 
             return Ok(result);
         }
+        
         [HttpPost]
         public async Task<IActionResult> DeleteUserInfo(DeleteUser data)
         {
