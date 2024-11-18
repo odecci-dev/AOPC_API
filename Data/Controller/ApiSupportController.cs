@@ -62,17 +62,27 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> GetSupportCountList(UserFilterDateRange data)
         {
             GlobalVariables gv = new GlobalVariables();
-            data.enddate = DateTime.Parse(data.enddate).AddDays(1).ToString();
+            if (data.enddate != null)
+            {
+                data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            }
             string sql = "";
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
 
-            if (data.startdate == null)
+            if (data.startdate == null && data.day == 0)
             {
                 sql = $@"SELECT COUNT(*) AS SuppportCnt FROM tbl_SupportModel INNER JOIN tbl_StatusModel ON tbl_SupportModel.Status = tbl_StatusModel.Id WHERE 
                          (tbl_SupportModel.Status = 14)";
             }
-            else {
+            else if (data.startdate != null && data.day == 0) {
                 sql = $@"SELECT COUNT(*) AS SuppportCnt FROM tbl_SupportModel INNER JOIN tbl_StatusModel ON tbl_SupportModel.Status = tbl_StatusModel.Id WHERE 
-                         (tbl_SupportModel.Status = 14) and tbl_SupportModel.DateCreated between '" + data.startdate + "' and '" + data.enddate;
+                         (tbl_SupportModel.Status = 14) and tbl_SupportModel.DateCreated between '" + data.startdate + "' and '" + data.enddate + "'";
+            }
+            else if (data.day != 0 && data.startdate == null)
+            {
+                sql = $@"SELECT COUNT(*) AS SuppportCnt FROM tbl_SupportModel INNER JOIN tbl_StatusModel ON tbl_SupportModel.Status = tbl_StatusModel.Id WHERE 
+                         (tbl_SupportModel.Status = 14) and  CONVERT(DATE,tbl_SupportModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE()))";
             }
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<SupportModel>();
@@ -91,16 +101,26 @@ namespace AuthSystem.Data.Controller
         {
             GlobalVariables gv = new GlobalVariables();
             string sql = "";
-            data.enddate = DateTime.Parse(data.enddate).AddDays(1).ToString();
-
-            if (data.startdate == null)
+            if (data.enddate != null)
             {
-                 sql = $@"SELECT Business, Count(*) as count FROM tbl_audittrailModel
+                data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            }
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+
+            if (data.startdate == null && data.day == 0)
+            {
+                sql = $@"SELECT Business, Count(*) as count FROM tbl_audittrailModel
+                         WHERE Actions LIKE '%view%'  and Module ='news' and Business <> '' GROUP BY Business order by count desc";
+            }
+            else if (data.startdate != null && data.day == 0) {
+                sql = $@"SELECT Business, Count(*) as count FROM tbl_audittrailModel
                          WHERE Actions LIKE '%view%'  and Module ='news' and Business <> '' and DateCreated between '" + data.startdate + "' and '" + data.enddate + "' GROUP BY Business order by count desc";
             }
-            else {
-                 sql = $@"SELECT Business, Count(*) as count FROM tbl_audittrailModel
-                         WHERE Actions LIKE '%view%'  and Module ='news' and Business <> '' GROUP BY Business order by count desc";
+            else if(data.day != 0 && data.startdate == null)
+            {
+                sql = $@"SELECT Business, Count(*) as count FROM tbl_audittrailModel
+                         WHERE Actions LIKE '%view%'  and Module ='news' and Business <> '' and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE())) GROUP BY Business order by count desc";
             }
                 DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<ClicCountModel>();
@@ -463,20 +483,23 @@ namespace AuthSystem.Data.Controller
         [HttpPost]
         public async Task<IActionResult> PostCallToActionsList(UserFilterCatday data)
         {
-            //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
-            //int day = data.day == 1 ? daysLeft : data.day;
-            data.enddate = DateTime.Parse(data.enddate).AddDays(1).ToString();
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            if (data.enddate != null)
+            {
+                data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            }
             string sql = "";
             try
             {
-                if (data.startdate == null  && data.category == "0")
+                if (data.startdate == null && data.category == "0" && data.day == 0)
                 {
                     sql = $@"SELECT Category.Business 'Business',COALESCE(Category.Module,'N/A') 'Category',COALESCE(Mail.Mail,0)'Email',COALESCE(Call.Call,0) 'Call',COALESCE(Book.Book,0) 'Book' from ( SELECT business,tbl_BusinessTypeModel.BusinessTypeName 'Module' from tbl_audittrailModel left join tbl_VendorModel on business = tbl_VendorModel.VendorName left join tbl_BusinessTypeModel on tbl_BusinessTypeModel.Id = tbl_VendorModel.BusinessTypeId where business != '' or tbl_BusinessTypeModel.BusinessTypeName != NULL GROUP BY Business,tbl_BusinessTypeModel.BusinessTypeName) AS Category
             LEFT JOIN (SELECT COUNT(*) as 'Mail',Business 'mailbusiness' FROM tbl_audittrailModel WHERE (Module = 'Mail')  GROUP BY Business)Mail ON Mail.mailbusiness =   Category.Business
             LEFT JOIN (SELECT COUNT(*) as 'Call',Business 'callbusiness' FROM tbl_audittrailModel WHERE (Module = 'Call')  GROUP BY Business)Call ON Call.callbusiness =   Category.Business
             LEFT JOIN (SELECT COUNT(*) as 'Book',Business 'bookbusiness' FROM tbl_audittrailModel WHERE (Module = 'Book')  GROUP BY Business)Book ON Book.bookbusiness =   Category.Business";
                 }
-                else if(data.startdate == null && data.category != "0" )
+                else if (data.startdate == null && data.category != "0" && data.day == 0)
                 {
                     sql = $@"SELECT Category.Business 'Business',COALESCE(Category.Module,'N/A') 'Category',COALESCE(Mail.Mail,0)'Email',COALESCE(Call.Call,0) 'Call',COALESCE(Book.Book,0) 'Book' from ( SELECT business,tbl_BusinessTypeModel.BusinessTypeName 'Module' from tbl_audittrailModel left join tbl_VendorModel on business = tbl_VendorModel.VendorName left join tbl_BusinessTypeModel on tbl_BusinessTypeModel.Id = tbl_VendorModel.BusinessTypeId where business != '' or tbl_BusinessTypeModel.BusinessTypeName != NULL  GROUP BY Business,tbl_BusinessTypeModel.BusinessTypeName) AS Category
             LEFT JOIN (SELECT COUNT(*) as 'Mail',Business 'mailbusiness' FROM tbl_audittrailModel WHERE (Module = 'Mail')  GROUP BY Business)Mail ON Mail.mailbusiness =   Category.Business
@@ -484,14 +507,28 @@ namespace AuthSystem.Data.Controller
             LEFT JOIN (SELECT COUNT(*) as 'Book',Business 'bookbusiness' FROM tbl_audittrailModel WHERE (Module = 'Book')  GROUP BY Business)Book ON Book.bookbusiness =   Category.Business
 			WHERE Category.Module = '" + data.category + "'";
                 }
-                else if (data.startdate != null && data.category == "0" )
+                else if (data.day != 0 && data.category == "0")
+                {
+                    sql = $@"SELECT Category.Business 'Business',COALESCE(Category.Module,'N/A') 'Category',COALESCE(Mail.Mail,0)'Email',COALESCE(Call.Call,0) 'Call',COALESCE(Book.Book,0) 'Book' from ( SELECT business,tbl_BusinessTypeModel.BusinessTypeName 'Module' from tbl_audittrailModel left join tbl_VendorModel on business = tbl_VendorModel.VendorName left join tbl_BusinessTypeModel on tbl_BusinessTypeModel.Id = tbl_VendorModel.BusinessTypeId where business != '' or tbl_BusinessTypeModel.BusinessTypeName != NULL GROUP BY Business,tbl_BusinessTypeModel.BusinessTypeName) AS Category
+            LEFT JOIN (SELECT COUNT(*) as 'Mail',Business 'mailbusiness' FROM tbl_audittrailModel WHERE (Module = 'Mail') and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE()))  GROUP BY Business)Mail ON Mail.mailbusiness =   Category.Business" + Environment.NewLine +
+            "LEFT JOIN (SELECT COUNT(*) as 'Call',Business 'callbusiness' FROM tbl_audittrailModel WHERE (Module = 'Call') and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE()))  GROUP BY Business)Call ON Call.callbusiness =   Category.Business" + Environment.NewLine +
+            "LEFT JOIN (SELECT COUNT(*) as 'Book',Business 'bookbusiness' FROM tbl_audittrailModel WHERE (Module = 'Book') and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE()))  GROUP BY Business)Book ON Book.bookbusiness =   Category.Business";
+                }
+                else if (data.day != 0 && data.category != "0")
+                {
+                    sql = $@"SELECT Category.Business 'Business',COALESCE(Category.Module,'N/A') 'Category',COALESCE(Mail.Mail,0)'Email',COALESCE(Call.Call,0) 'Call',COALESCE(Book.Book,0) 'Book' from ( SELECT business,tbl_BusinessTypeModel.BusinessTypeName 'Module' from tbl_audittrailModel left join tbl_VendorModel on business = tbl_VendorModel.VendorName left join tbl_BusinessTypeModel on tbl_BusinessTypeModel.Id = tbl_VendorModel.BusinessTypeId where business != '' or tbl_BusinessTypeModel.BusinessTypeName != NULL GROUP BY Business,tbl_BusinessTypeModel.BusinessTypeName) AS Category
+            LEFT JOIN (SELECT COUNT(*) as 'Mail',Business 'mailbusiness' FROM tbl_audittrailModel WHERE (Module = 'Mail') and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE()))  GROUP BY Business)Mail ON Mail.mailbusiness =   Category.Business" + Environment.NewLine +
+            "LEFT JOIN (SELECT COUNT(*) as 'Call',Business 'callbusiness' FROM tbl_audittrailModel WHERE (Module = 'Call') and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE()))  GROUP BY Business)Call ON Call.callbusiness =   Category.Business" + Environment.NewLine +
+            "LEFT JOIN (SELECT COUNT(*) as 'Book',Business 'bookbusiness' FROM tbl_audittrailModel WHERE (Module = 'Book') and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE()))  GROUP BY Business)Book ON Book.bookbusiness =   Category.Business WHERE Category.Module = '" + data.category + "'";
+                }
+                else if (data.startdate != null && data.category == "0")
                 {
                     sql = $@"SELECT Category.Business 'Business',COALESCE(Category.Module,'N/A') 'Category',COALESCE(Mail.Mail,0)'Email',COALESCE(Call.Call,0) 'Call',COALESCE(Book.Book,0) 'Book' from ( SELECT business,tbl_BusinessTypeModel.BusinessTypeName 'Module' from tbl_audittrailModel left join tbl_VendorModel on business = tbl_VendorModel.VendorName left join tbl_BusinessTypeModel on tbl_BusinessTypeModel.Id = tbl_VendorModel.BusinessTypeId where business != '' or tbl_BusinessTypeModel.BusinessTypeName != NULL GROUP BY Business,tbl_BusinessTypeModel.BusinessTypeName) AS Category
             LEFT JOIN (SELECT Count(*) AS 'Mail',Call.Business from (SELECT Business,DateCreated from tbl_audittrailModel where business != '' and module = 'mail' and DateCreated between'" + data.startdate + "' and '" + data.enddate + "') AS Call  GROUP BY Business)Mail ON Mail.Business =   Category.Business" + Environment.NewLine +
             "LEFT JOIN (SELECT Count(*) AS 'Call',Call.Business from (SELECT Business,DateCreated from tbl_audittrailModel where business != '' and module = 'call' and DateCreated between'" + data.startdate + "' and '" + data.enddate + "') AS Call  GROUP BY Business)Call ON Call.Business =   Category.Business" + Environment.NewLine +
             "LEFT JOIN (SELECT Count(*) AS 'Book',Call.Business from (SELECT Business,DateCreated from tbl_audittrailModel where business != '' and module = 'book' and DateCreated between'" + data.startdate + "' and '" + data.enddate + "') AS Call  GROUP BY Business)Book ON Book.Business =   Category.Business ";
                 }
-                else
+                else if (data.startdate != null && data.category != "0")
                 {
                     sql = $@"SELECT Category.Business 'Business',COALESCE(Category.Module,'N/A') 'Category',COALESCE(Mail.Mail,0)'Email',COALESCE(Call.Call,0) 'Call',COALESCE(Book.Book,0) 'Book' from ( SELECT business,tbl_BusinessTypeModel.BusinessTypeName 'Module' from tbl_audittrailModel left join tbl_VendorModel on business = tbl_VendorModel.VendorName left join tbl_BusinessTypeModel on tbl_BusinessTypeModel.Id = tbl_VendorModel.BusinessTypeId where business != '' or tbl_BusinessTypeModel.BusinessTypeName != NULL GROUP BY Business,tbl_BusinessTypeModel.BusinessTypeName) AS Category
             LEFT JOIN (SELECT Count(*) AS 'Mail',Call.Business from (SELECT Business,DateCreated from tbl_audittrailModel where business != '' and module = 'mail' and DateCreated between'" + data.startdate + "' and '" + data.enddate + "') AS Call  GROUP BY Business)Mail ON Mail.Business =   Category.Business" + Environment.NewLine +
@@ -536,15 +573,26 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> GetCountAllUserlist(UserFilterDateRange data)
         {
             GlobalVariables gv = new GlobalVariables();
-            data.enddate = DateTime.Parse(data.enddate).AddDays(1).ToString();
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            if (data.enddate != null)
+            {
+                data.enddate = DateTime.Parse(data.enddate).AddDays(1).ToString();
+            }
             string sql = "";
 
-            if (data.startdate == null)
+            if (data.startdate != null)
             {
-                sql = $@"select Count(*) as count from UsersModel where active=1";
+                sql = $@"select Count(*) as count from UsersModel where active=1 and DateCreated between '" + data.startdate + "' and '" + data.enddate + "'";
             }
-            else {
-                sql = $@"select Count(*) as count from UsersModel where active=1 and DateCreated between '" + data.startdate + "' and '" + data.enddate;
+            else if (data.day != 0) {
+                sql = $@"select Count(*) as count from UsersModel where active=1 and CONVERT(DATE,DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE()))";
+
+            }
+            else
+            {
+
+                sql = $@"select Count(*) as count from UsersModel where active=1";
             }
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<Usertotalcount>();
@@ -697,19 +745,27 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> PostMostClickRestaurantList(UserFilterDateRange data)
         {
             //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
-            //int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
-            //int day = data.day == 1 ? daysLeft : data.day;
-            data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            if (data.enddate != null)
+            {
+                data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            }
+            string sql = "";
             try
             {
-
-                //string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
-                //        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
-                //        "GROUP BY    Business,Actions,Module order by count desc";
-
-                string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
-                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' AND tbl_audittrailModel.DateCreated between '" +  data.startdate + "' AND '" + data.enddate +
-                        "' GROUP BY    Business,Actions,Module order by count desc";
+                if (data.day != 0)
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE())) " +
+                            "GROUP BY    Business,Actions,Module order by count desc";
+                }
+                else
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' AND tbl_audittrailModel.DateCreated between '" + data.startdate + "' AND '" + data.enddate +
+                            "' GROUP BY    Business,Actions,Module order by count desc";
+                }
                 DataTable dt = db.SelectDb(sql).Tables[0];
                 var result = new List<MostClickRestoModel>();
                 int total = 0;
@@ -766,15 +822,27 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> PostMostClickWellnessList(UserFilterDateRange data)
         {
             //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
-            //int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
-            //int day = data.day == 1 ? daysLeft : data.day;
-            data.enddate = DateTime.Parse(data.enddate).AddDays(1).ToString();
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            if (data.enddate != null)
+            {
+                data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            }
+            string sql = "";
             try
             {
-
-                string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                if (data.day != 0)
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Wellness' and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE())) " +
+                                    "GROUP BY    Business,Actions,Module order by count desc";
+                }
+                else
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Wellness' and  tbl_audittrailModel.DateCreated between '" + data.startdate + "' and '" + data.enddate +
-                        "GROUP BY    Business,Actions,Module order by count desc";
+                            "' GROUP BY    Business,Actions,Module order by count desc";
+                }
                 DataTable dt = db.SelectDb(sql).Tables[0];
                 var result = new List<GenericMostClickModel>();
                 int total = 0;
@@ -831,15 +899,27 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> PostMostClickHealthList(UserFilterDateRange data)
         {
             //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
-            //int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
-            //int day = data.day == 1 ? daysLeft : data.day;
-            data.enddate = DateTime.Parse(data.enddate).AddDays(1).ToString();
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            if (data.enddate != null)
+            {
+                data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            }
+            string sql = "";
             try
             {
-
-                string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                if (data.day != 0)
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Health' and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE())) " +
+                                    "GROUP BY    Business,Actions,Module order by count desc";
+                }
+                else
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Health' and  tbl_audittrailModel.DateCreated between '" + data.startdate + "' and '" + data.enddate +
-                        "GROUP BY    Business,Actions,Module order by count desc";
+                           "' GROUP BY    Business,Actions,Module order by count desc";
+                }
                 DataTable dt = db.SelectDb(sql).Tables[0];
                 var result = new List<GenericMostClickModel>();
                 int total = 0;
@@ -993,8 +1073,8 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> PostNewRegistered(UserFilterDateRange data)
         {
             int total = 0;
-            //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
-            //int day = data.day == 1 ? 334 : data.day;
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
             string datecreated = "";
             int count_ = 0;
             var result = new List<Usertotalcount>();
@@ -1007,74 +1087,84 @@ namespace AuthSystem.Data.Controller
                 {
                     total = int.Parse(dr["count"].ToString());
                 }
+                DateTime startDate = DateTime.Now;
+                DateTime endDate = DateTime.Now;
+                if (data.startdate != null)
+                {
+                     startDate = Convert.ToDateTime(data.startdate);
 
-                DateTime startDate = Convert.ToDateTime(data.startdate);
+                     endDate = DateTime.Parse(data.enddate);
+                }
+                else
+                {
+                     startDate = DateTime.Now.AddDays(-day);
 
-                DateTime endDate = DateTime.Parse(data.enddate);
+                     endDate = DateTime.Now;
+                }
 
                 var months = MonthsBetween(startDate, endDate).ToList();
                 var items = new List<monthsdate>();
                 var mo = JsonConvert.SerializeObject(months);
                 var list = JsonConvert.DeserializeObject<List<monthsdate>>(mo);
-                //if (data.day == 1)
-                //{
-                //    for(int x= 0; x<list.Count; x++)
-                //    {
-                //        //var item = new monthsdate();
-                //        //var month = list[x].label;
-                //        //item.label = month;
-                //        //items.Add(item);
-                //        string sql1 = $@"SELECT  DATENAME(month,DateCreated)  AS month , count(*) as count from UsersModel where active = 1 and DATENAME(month,DateCreated) = '"+ list[x].label + "'   group by   DATENAME(month,DateCreated)   ";
-                //        DataTable dt1 = db.SelectDb(sql1).Tables[0];
+                if (data.day == 1)
+                {
+                    for (int x = 0; x < list.Count; x++)
+                    {
+                        //var item = new monthsdate();
+                        //var month = list[x].label;
+                        //item.label = month;
+                        //items.Add(item);
+                        string sql1 = $@"SELECT  DATENAME(month,DateCreated)  AS month , count(*) as count from UsersModel where active = 1 and DATENAME(month,DateCreated) = '" + list[x].label + "'   group by   DATENAME(month,DateCreated)   ";
+                        DataTable dt1 = db.SelectDb(sql1).Tables[0];
 
 
-                //        if (dt1.Rows.Count == 0)
-                //        {
-                //            datecreated = list[x].label;
-                //            count_ = 0;
-                //        }
-                //        else
-                //        {
-                //            foreach (DataRow dr in dt1.Rows)
-                //            {
-                //                datecreated = dr["month"].ToString();
-                //                count_ = int.Parse(dr["count"].ToString());
-                //            }
-                //        }
+                        if (dt1.Rows.Count == 0)
+                        {
+                            datecreated = list[x].label;
+                            count_ = 0;
+                        }
+                        else
+                        {
+                            foreach (DataRow dr in dt1.Rows)
+                            {
+                                datecreated = dr["month"].ToString();
+                                count_ = int.Parse(dr["count"].ToString());
+                            }
+                        }
 
-                //        string sql = $@"SELECT count(*) as count
-                //         FROM  UsersModel
-                //         WHERE DateCreated >= DATEADD(day,-" + day + ", GETDATE()) and active= 1";
-                //        DataTable dt = db.SelectDb(sql).Tables[0];
-                //        var item = new Usertotalcount();
-                //        if (dt.Rows.Count > 0)
-                //        {
-                //            foreach (DataRow dr in dt.Rows)
-                //            {
-                //                double val1 = double.Parse(dr["count"].ToString());
-                //                double val2 = double.Parse(total.ToString());
+                        string sql = $@"SELECT count(*) as count
+                         FROM  UsersModel
+                         WHERE CONVERT(DATE,DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE())) and active= 1";
+                        DataTable dt = db.SelectDb(sql).Tables[0];
+                        var item = new Usertotalcount();
+                        if (dt.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                double val1 = double.Parse(dr["count"].ToString());
+                                double val2 = double.Parse(total.ToString());
 
-                //                double results = Math.Abs(val1 / val2 * 100);
-                //                item.count = int.Parse(dr["count"].ToString());
-                //                item.Date = datecreated;
-                //                item.graph_count = count_;
-                //                item.percentage = results;
-                //                result.Add(item);
+                                double results = Math.Abs(val1 / val2 * 100);
+                                item.count = int.Parse(dr["count"].ToString());
+                                item.Date = datecreated;
+                                item.graph_count = count_;
+                                item.percentage = results;
+                                result.Add(item);
 
-                //            }
+                            }
 
 
-                //        }
-                //        else
-                //        {
-                //            return BadRequest("ERROR");
-                //        }
+                        }
+                        else
+                        {
+                            return BadRequest("ERROR");
+                        }
 
-                //    }
+                    }
 
-                //}
-                //else
-                //{
+                }
+                else
+                {
                     string query = $@"select Count(*) as count from UsersModel where active=1";
                     DataTable dtble = db.SelectDb(query).Tables[0];
 
@@ -1083,7 +1173,7 @@ namespace AuthSystem.Data.Controller
                         total = int.Parse(dr["count"].ToString());
                     }
                     List<DateTime> allDates = new List<DateTime>();
-                    
+
                     for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
                     {
                         //allDates.Add(date.Date);
@@ -1106,10 +1196,19 @@ namespace AuthSystem.Data.Controller
                                 count_ = int.Parse(dr["count"].ToString());
                             }
                         }
-
-                        string sql = $@"SELECT count(*) as count
+                        string sql = "";
+                        if (data.startdate != null)
+                        {
+                             sql = $@"SELECT count(*) as count
                          FROM  UsersModel
                          WHERE DateCreated between '" + data.startdate + "' and '" + data.enddate + "' and active= 1";
+                        }
+                        else if (data.day != 0)
+                        {
+                             sql = $@"SELECT count(*) as count
+                         FROM  UsersModel
+                         WHERE CONVERT(DATE,DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE())) and active= 1";
+                        }
                         DataTable dt = db.SelectDb(sql).Tables[0];
                         var item = new Usertotalcount();
                         if (dt.Rows.Count > 0)
@@ -1139,7 +1238,7 @@ namespace AuthSystem.Data.Controller
 
                     }
 
-                //}
+                }
 
 
                 return Ok(result);
@@ -1155,15 +1254,27 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> PostMostClickedHospitalityList(UserFilterDateRange data)
         {
             //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
-            //int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
-            //int day = data.day == 1 ? daysLeft : data.day;
-            data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            if (data.enddate != null)
+            {
+                data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            }
+            string sql = "";
             try
             {
-
-                string sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                if (data.day != 0)
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Rooms & Suites' and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE())) " +
+                                "GROUP BY    Business,Actions,Module order by count desc";
+                }
+                else
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Rooms & Suites' and  tbl_audittrailModel.DateCreated between '" + data.startdate + "' and '" + data.enddate +
-                        "GROUP BY    Business,Actions,Module order by count desc";
+                            "' GROUP BY    Business,Actions,Module order by count desc";
+                }
                 DataTable dt = db.SelectDb(sql).Tables[0];
                 var result = new List<MostClickHospitalityModel>();
                 if (dt.Rows.Count > 0)
@@ -1221,14 +1332,27 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> PostMostCickStoreList(UserFilterDateRange data)
         {
             //int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
-            //int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
-            //int day = data.day == 1 ? daysLeft : data.day;
-            data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            int daysLeft = (DateTime.Now - DateTime.Now.AddYears(-1)).Days;
+            int day = data.day == 1 ? daysLeft : data.day;
+            if (data.enddate != null)
+            {
+                data.enddate = (DateTime.Parse(data.enddate).AddDays(1)).ToString();
+            }
+            string sql = "";
             try
             {
-                string sql = $@"SELECT     Count(*)as count, Actions,Business,Module
+                if (data.day != 0)
+                {
+                    sql = $@"SELECT     Count(*)as count,Business,Actions,Module
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Shops & Services' and  CONVERT(DATE,tbl_audittrailModel.DateCreated) >= CONVERT(DATE,DATEADD(day,-" + day + ", GETDATE())) " +
+                                    "GROUP BY    Business,Actions,Module order by count desc";
+                }
+                else
+                {
+                    sql = $@"SELECT     Count(*)as count, Actions,Business,Module
                          FROM         tbl_audittrailModel  WHERE Actions LIKE '%View%' and module ='Shops & Services' and  tbl_audittrailModel.DateCreated between '" + data.startdate + "' and '" + data.enddate +
-                         " GROUP BY    Business,Actions,Module order by count desc";
+                             "' GROUP BY    Business,Actions,Module order by count desc";
+                }
                 DataTable dt = db.SelectDb(sql).Tables[0];
                 List<MostClickStoreModel> result = new List<MostClickStoreModel>();
                 List<MostClickStoreModel> result2 = new List<MostClickStoreModel>();
@@ -1316,12 +1440,14 @@ namespace AuthSystem.Data.Controller
         }
         public class UserFilterDateRange
         {
-            public string startdate { get; set; }
-            public string enddate { get; set; }
+            public int day { get; set; }
+            public string? startdate { get; set; }
+            public string? enddate { get; set; }
 
         }
         public class UserFilterCatday
         {
+            public int day { get; set; }
             public string? startdate { get; set; }
             public string? enddate { get; set; }
 
