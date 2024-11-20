@@ -406,5 +406,20 @@ where tbl_CorporateModel.CorporateName =  '" + company + "'";
             }
             return result;
         }
+
+        public List<CorporateNotificationData> GetAllActiveusers()
+        {
+            string sql = $@"SELECT EmployeeID FROM UsersModel WHERE Active in (1,5) and CorporateID = 1";
+            var result = new List<CorporateNotificationData>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new CorporateNotificationData();
+                item.EmployeeID = dr["EmployeeID"].ToString();
+
+                result.Add(item);
+            }
+            return result;
+        }
     }
 }

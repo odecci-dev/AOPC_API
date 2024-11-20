@@ -220,7 +220,22 @@ namespace AuthSystem.Data.Controller
             return Ok();
         }
 
-        
+        [HttpPost]
+        public async Task<IActionResult> SendNotificationForActiveUser()
+        {
+            int isRead = 0;
+            string body = "Dear Valued Member, \r\nWe would like to inform you that, due to exceptionally high guest occupancy at The St. Regis Doha, external access to the pool and beach facilities will be restricted on November 21st, 22nd, and 23rd.\r\n \r\nThank you for your understanding and we apologize for any inconvenience caused.";
+            List<CorporateNotificationData> item = new List<CorporateNotificationData>();
+            item = dbmet.GetAllActiveusers();
+            foreach (var a in item)
+                {
+                string Insert = $@"insert into tbl_NotificationModel (EmployeeID,Details,isRead,Module,ItemID,EmailStatus,DateCreated) values
+                ('" + a.EmployeeID + "','" + body + "','" + isRead + "','" + " " + "','" + " " + "','" + 15 + "','" + DateTime.Now.ToString("yyyy-MM-dd") + "') ";
+                db.AUIDB_WithParam(Insert);
+                }
+            
+            return Ok();
+        }
 
         #region Model
 
