@@ -1,4 +1,5 @@
-﻿using AuthSystem.Manager;
+﻿using API.ViewModel;
+using AuthSystem.Manager;
 using AuthSystem.Models;
 using AuthSystem.Services;
 using AuthSystem.ViewModel;
@@ -32,7 +33,7 @@ namespace AuthSystem.Data.Controller
             this.jwtAuthenticationManager = jwtAuthenticationManager;
             _context = context;
         }
-        public class Registerstats
+        public class RegisterStats
         {
             public string Status { get; set; }
 
@@ -86,15 +87,29 @@ namespace AuthSystem.Data.Controller
 
 
         }
+
+        public class PaginationCorpUserCountModel
+        {
+            public string? CurrentPage { get; set; }
+            public string? NextPage { get; set; }
+            public string? PrevPage { get; set; }
+            public string? TotalPage { get; set; }
+            public string? PageSize { get; set; }
+            public string? TotalRecord { get; set; }
+            public string? TotalVIP { get; set; }
+            public List<CorporateUserCountVM> items { get; set; }
+
+
+        }
         public class paginate
         {
             public string? FilterName { get; set; }
             public int page { get; set; }
         }
         [HttpPost]
-        public async Task<IActionResult> DisplayListPaginate(paginate data )
+        public async Task<IActionResult> DisplayListPaginate(paginate data)
         {
-          
+
             string module = "Vendor";
             string status = "ACTIVE";
             int pageSize = 25;
@@ -146,7 +161,7 @@ namespace AuthSystem.Data.Controller
                             items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
                         }
                         break;
-                    
+
                     default:
                         items = null;
                         break;
@@ -155,10 +170,10 @@ namespace AuthSystem.Data.Controller
                 var item = new PaginationModel();
                 int pages = data.page == 0 ? 1 : data.page;
                 item.CurrentPage = data.page == 0 ? "1" : data.page.ToString();
-           
+
                 int page_prev = pages - 1;
                 //int t_record = int.Parse(items.Count.ToString()) / int.Parse(page_size);
-               
+
                 double t_records = Math.Ceiling(double.Parse(totalItems.ToString()) / double.Parse(page_size));
                 int page_next = data.page >= t_records ? 0 : pages + 1;
                 item.NextPage = items.Count % int.Parse(page_size) >= 0 ? page_next.ToString() : "0";
@@ -277,6 +292,17 @@ namespace AuthSystem.Data.Controller
             }
         }
 
+        public class paginateCorpUserv2
+        {
+            public string? CorpId { get; set; }
+            public string? PosId { get; set; }
+            public string? Gender { get; set; }
+            public string? isVIP { get; set; }
+            public string? Status { get; set; }
+            public string? FilterName { get; set; }
+            public int page { get; set; }
+        }
+
         public class paginateCorpUser
         {
             public string? CorpId { get; set; }
@@ -288,8 +314,8 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> DisplayCorporateUser(paginateCorpUser data)
         {
 
-           
-            
+
+
             string status = "ACTIVE";
             int pageSize = 10;
             //var model_result = (dynamic)null;
@@ -301,49 +327,49 @@ namespace AuthSystem.Data.Controller
             try
             {
 
-              
-               
-                        //model_result = new PaginationModel<VendorVM>();
 
-                        if (data.FilterName == null && data.PosId == "0" || data.PosId == null)
-                        {
 
-                            var Member = dbmet.GetCorporateAdminUserList().Where(a=>a.CorporateID == data.CorpId).ToList();
-                            totalItems = Member.Count;
-                            totalVIP = Member.Where(a=>a.isVIP == "1").ToList().Count;
-                            totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+                //model_result = new PaginationModel<VendorVM>();
 
-                            items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                        }  
-                        else if(data.PosId != "0"  && data.PosId != null && data.FilterName != null)
-                        {
-                            var Member = dbmet.GetCorporateAdminUserList().Where(a => a.Username.ToUpper().Contains(data.FilterName.ToUpper()) && a.PositionID == data.PosId &&  a.CorporateID == data.CorpId).ToList();
-                            totalItems = Member.Count;
-                      totalVIP = Member.Where(a=>a.isVIP == "1").ToList().Count;
-                            totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+                if (data.FilterName == null && data.PosId == "0" || data.PosId == null)
+                {
 
-                            items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                        }
-                        else if(data.PosId != "0" && data.PosId != null )
-                        {
-                            var Member = dbmet.GetCorporateAdminUserList().Where(a =>a.PositionID == data.PosId && a.CorporateID == data.CorpId).ToList();
-                            totalItems = Member.Count;
-                      totalVIP = Member.Where(a=>a.isVIP == "1").ToList().Count;
-                            totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.CorporateID == data.CorpId).ToList();
+                    totalItems = Member.Count;
+                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
+                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
 
-                            items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                        }
-                     
-                        else 
-                        {
-                            var Member = dbmet.GetCorporateAdminUserList().Where(a => a.Username.ToUpper().Contains(data.FilterName.ToUpper()) && a.CorporateID == data.CorpId ).ToList();
-                            totalItems = Member.Count;
-                      totalVIP = Member.Where(a=>a.isVIP == "1").ToList().Count;
-                            totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
+                }
+                else if (data.PosId != "0" && data.PosId != null && data.FilterName != null)
+                {
+                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.Username.ToUpper().Contains(data.FilterName.ToUpper()) && a.PositionID == data.PosId && a.CorporateID == data.CorpId).ToList();
+                    totalItems = Member.Count;
+                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
+                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
 
-                            items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                        }
-                 
+                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
+                }
+                else if (data.PosId != "0" && data.PosId != null)
+                {
+                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.PositionID == data.PosId && a.CorporateID == data.CorpId).ToList();
+                    totalItems = Member.Count;
+                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
+                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+
+                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
+                }
+
+                else
+                {
+                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.Username.ToUpper().Contains(data.FilterName.ToUpper()) && a.CorporateID == data.CorpId).ToList();
+                    totalItems = Member.Count;
+                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
+                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+
+                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
+                }
+
 
                 var result = new List<PaginationCorpUserModel>();
                 var item = new PaginationCorpUserModel();
@@ -376,7 +402,7 @@ namespace AuthSystem.Data.Controller
 
 
         [HttpPost]
-        public async Task<IActionResult> DisplayRegistrationList(paginateCorpUser data)
+        public async Task<IActionResult> DisplayRegistrationList(paginateCorpUserv2 data)
         {
 
 
@@ -392,83 +418,11 @@ namespace AuthSystem.Data.Controller
             try
             {
 
+                var Member = dbmet.GetCorporateAdminUserListv2(data).ToList();
+                totalItems = Member.Count;
+                totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+                items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
 
-
-                //model_result = new PaginationModel<VendorVM>();
-
-                if (data.FilterName == null &&  data.PosId == null && data.CorpId == null )
-                {
-
-                    var Member = dbmet.GetCorporateAdminUserList().ToList();
-                    totalItems = Member.Count;
-                    totalVIP = Member.Where(a=>a.isVIP == "1").ToList().Count;
-                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
-
-                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                }
-                else if (data.PosId != "0" && data.PosId != null && data.FilterName != null && data.CorpId != null)
-                {
-                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.Username.ToUpper().Contains(data.FilterName.ToUpper()) && a.PositionID == data.PosId && a.CorporateID == data.CorpId).ToList();
-                    totalItems = Member.Count;
-                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
-                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
-
-                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                }
-                else if ( data.PosId != null  && data.CorpId != null)
-                {
-                    var Member = dbmet.GetCorporateAdminUserList().Where(a =>  a.PositionID == data.PosId && a.CorporateID == data.CorpId).ToList();
-                    totalItems = Member.Count;
-                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
-                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
-
-                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                }
-                else if (data.PosId != null && data.FilterName != null)
-                {
-                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.PositionID == data.PosId && a.Username.ToUpper().Contains(data.FilterName.ToUpper())).ToList();
-                    totalItems = Member.Count;
-                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
-                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
-
-                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                }
-                else if (data.CorpId != null && data.FilterName != null)
-                {
-                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.CorporateID == data.CorpId && a.Username.ToUpper().Contains(data.FilterName.ToUpper())).ToList();
-                    totalItems = Member.Count;
-                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
-                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
-
-                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                }
-                else if ( data.PosId != null)
-                {
-                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.PositionID == data.PosId).ToList();
-                    totalItems = Member.Count;
-                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
-                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
-
-                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                }
-                else if (data.CorpId != null)
-                {
-                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.CorporateID == data.CorpId).ToList();
-                    totalItems = Member.Count;
-                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
-                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
-
-                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                }
-                else
-                {
-                    var Member = dbmet.GetCorporateAdminUserList().Where(a => a.Username.ToUpper().Contains(data.FilterName.ToUpper()) && a.CorporateID == data.CorpId).ToList();
-                    totalItems = Member.Count;
-                    totalVIP = Member.Where(a => a.isVIP == "1").ToList().Count;
-                    totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
-
-                    items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
-                }
 
 
                 var result = new List<PaginationCorpUserModel>();
