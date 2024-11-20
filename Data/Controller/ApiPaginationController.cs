@@ -33,7 +33,7 @@ namespace AuthSystem.Data.Controller
             this.jwtAuthenticationManager = jwtAuthenticationManager;
             _context = context;
         }
-        public class Registerstats
+        public class RegisterStats
         {
             public string Status { get; set; }
 

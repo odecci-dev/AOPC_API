@@ -17,6 +17,7 @@ using System.Text;
 using AuthSystem.ViewModel;
 using static AuthSystem.Data.Controller.ApiUserAcessController;
 using static AuthSystem.Data.Controller.ApiRegisterController;
+using static AuthSystem.Data.Controller.ApiPaginationController;
 
 namespace AuthSystem.Data.Controller
 {
@@ -43,36 +44,107 @@ namespace AuthSystem.Data.Controller
             this.jwtAuthenticationManager = jwtAuthenticationManager;
    
         }
-      
-        [HttpGet]
-        public async Task<IActionResult> CorporateList()
-        {
-            var list = (from a in _context.tbl_CorporatePrivilegesModel
-                        join b in _context.tbl_MembershipModel
-                        on a.MembershipID equals b.Id
-                        join c in _context.tbl_CorporateModel
-                        on a.CorporateID equals c.Id
-                        join e in _context.tbl_UsersModel2
-                       on c.Id equals e.CorporateID
-                        select new
-                        {
-                            Id = a.Id,
-                            Membership = b.Name,
-                            CorporateNmae = c.CorporateName,
-                            Desc = a.Description,
-                            Address = c.Address,
-                            Cno = c.CNo,
-                            Email = c.EmailAddress,
-                            Size = a.Size,
-                            Count = a.Count,
-                            DateIssued = Convert.ToDateTime(a.DateIssued).ToString("MM/dd/yyyy hh:mm:ss"),
-                            DateExpired = Convert.ToDateTime(a.DateExpired).ToString("MM/dd/yyyy hh:mm:ss"),
-                            DateCreated = Convert.ToDateTime(a.DateCreated).ToString("MM/dd/yyyy hh:mm:ss"),
-                            Fullname = e.Fullname
 
-                        }
-                        ).ToList();
-            return Ok(list);
+        //[HttpGet]
+        //public async Task<IActionResult> CorporateList()
+        //{
+        //    var list = (from a in _context.tbl_CorporatePrivilegesModel
+        //                join b in _context.tbl_MembershipModel
+        //                on a.MembershipID equals b.Id
+        //                join c in _context.tbl_CorporateModel
+        //                on a.CorporateID equals c.Id
+        //                join e in _context.tbl_UsersModel2
+        //               on c.Id equals e.CorporateID
+        //                select new
+        //                {
+        //                    Id = a.Id,
+        //                    Membership = b.Name,
+        //                    CorporateNmae = c.CorporateName,
+        //                    Desc = a.Description,
+        //                    Address = c.Address,
+        //                    Cno = c.CNo,
+        //                    Email = c.EmailAddress,
+        //                    Size = a.Size,
+        //                    Count = a.Count,
+        //                    DateIssued = Convert.ToDateTime(a.DateIssued).ToString("MM/dd/yyyy hh:mm:ss"),
+        //                    DateExpired = Convert.ToDateTime(a.DateExpired).ToString("MM/dd/yyyy hh:mm:ss"),
+        //                    DateCreated = Convert.ToDateTime(a.DateCreated).ToString("MM/dd/yyyy hh:mm:ss"),
+        //                    Fullname = e.Fullname
+
+        //                }
+        //                ).ToList();
+        //    return Ok(list);
+        //}
+
+        [HttpPost]
+        public async Task<IActionResult> Corporatelist(paginateCorpUserv2 data)
+        {
+            GlobalVariables gv = new GlobalVariables();
+            string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
+                 tbl_UserTypeModel.UserType, UsersModel.Fullname, UsersModel.Id, UsersModel.DateCreated, tbl_PositionModel.Id AS PositionID, tbl_CorporateModel.Id AS CorporateID, tbl_StatusModel.Name AS status, UsersModel.isVIP, 
+                 UsersModel.FilePath
+                FROM            UsersModel INNER JOIN
+                tbl_CorporateModel ON UsersModel.CorporateID = tbl_CorporateModel.Id LEFT OUTER JOIN
+                tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
+                tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
+                tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
+                WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)
+                order by UsersModel.Id Desc";
+
+
+            if (data.CorpId != null)
+            {
+                sql += " AND tbl_CorporateModel.Id = " + data.CorpId;
+            }
+            if (data.PosId != null)
+            {
+                sql += " AND tbl_PositionModel.Id = " + data.PosId;
+            }
+            if (data.Gender != null)
+            {
+                sql += " AND UsersModel.Gender = '" + data.Gender + "'";
+            }
+            if (data.isVIP != null)
+            {
+                sql += " AND UsersModel.isVIP = " + data.isVIP;
+            }
+            if (data.Status != null)
+            {
+                sql += " AND tbl_StatusModel.Name = '" + data.Status + "'";
+            }
+            if (data.FilterName != null)
+            {
+                sql += " AND (UsersModel.Fname like '%" + data.FilterName + "%' or UsersModel.Lname like '%" + data.FilterName + "%')";
+            }
+
+            var result = new List<UserVM>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new UserVM();
+                item.Id = int.Parse(dr["id"].ToString());
+                item.Fullname = dr["Fname"].ToString() + " " + dr["Lname"].ToString();
+                item.Username = dr["Username"].ToString();
+                item.Fname = dr["Fname"].ToString();
+                item.Lname = dr["Lname"].ToString();
+                item.Email = dr["Email"].ToString();
+                item.Gender = dr["Gender"].ToString();
+                item.EmployeeID = dr["EmployeeID"].ToString();
+                item.Position = dr["Position"].ToString();
+                item.Corporatename = dr["Corporatename"].ToString();
+                item.UserType = dr["UserType"].ToString();
+                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
+                item.CorporateID = dr["CorporateID"].ToString();
+                item.PositionID = dr["PositionID"].ToString();
+                item.status = dr["status"].ToString();
+                item.FilePath = dr["FilePath"].ToString();
+                item.FilePath = dr["FilePath"].ToString();
+                item.isVIP = dr["isVIP"].ToString();
+                result.Add(item);
+            }
+
+            return Ok(result);
         }
         [HttpGet]
         public async Task<IActionResult> CompanyList()
