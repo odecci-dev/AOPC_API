@@ -219,7 +219,7 @@ namespace AuthSystem.Data.Controller
             }
             return Ok();
         }
-
+        //NEW
         [HttpPost]
         public async Task<IActionResult> SendNotificationForActiveUser()
         {
