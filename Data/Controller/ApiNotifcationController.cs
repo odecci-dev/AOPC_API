@@ -111,9 +111,36 @@ namespace AuthSystem.Data.Controller
         [HttpPost]
         public async Task<IActionResult> GetNotifEmpId(NotifId data)
         {
-            string sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated,Module,ItemID,EmailStatus
+            string sql = "";
+            string today = DateTime.Now.ToString("yyyy-MM-dd");
+            string yesterday = DateTime.Now.AddDays(-1).ToString();
+            if (data.day != 0)
+            {
+                if (data.day == 1)
+                {
+                    sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated,Module,ItemID,EmailStatus
                             FROM            tbl_NotificationModel
-                            WHERE        (EmployeeID = '" +data.EmployeeID + "')  and tbl_NotificationModel.isRead = 0  order by id desc";
+                            WHERE        (EmployeeID = '" + data.EmployeeID + "') and CONVERT(DATE,DateCreated) = CONVERT(DATE,'" + today + "')  and tbl_NotificationModel.isRead = 0  order by id desc";
+                }
+                else if (data.day == -1)
+                {
+                    sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated,Module,ItemID,EmailStatus
+                            FROM            tbl_NotificationModel
+                            WHERE        (EmployeeID = '" + data.EmployeeID + "') and CONVERT(DATE,DateCreated) = CONVERT(DATE,'" + yesterday + "')  and tbl_NotificationModel.isRead = 0  order by id desc";
+                }
+            }
+            else if (data.startdate != null)
+            {
+                sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated,Module,ItemID,EmailStatus
+                            FROM            tbl_NotificationModel
+                            WHERE        (EmployeeID = '" + data.EmployeeID + "') and CONVERT(DATE,DateCreated) between CONVERT(DATE,'" + data.startdate + "')  and CONVERT(DATE,'" + data.enddate + "') and tbl_NotificationModel.isRead = 0  order by id desc";
+            }
+            else
+            {
+                sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated,Module,ItemID,EmailStatus
+                            FROM            tbl_NotificationModel
+                            WHERE        (EmployeeID = '" + data.EmployeeID + "')   and tbl_NotificationModel.isRead = 0  order by id desc";
+            }
             var result = new List<NotificationModel>();
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
@@ -299,6 +326,9 @@ namespace AuthSystem.Data.Controller
         public class NotifId
         {
             public string? EmployeeID { get; set; }
+            public int day { get; set; }
+            public string? startdate { get; set; }
+            public string? enddate { get; set; }
 
         }
         public class NotifIdUpdate
