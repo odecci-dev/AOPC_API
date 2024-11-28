@@ -1,4 +1,5 @@
-﻿using API.Models;
+﻿#nullable disable
+using API.Models;
 using CMS.Models;
 using Microsoft.EntityFrameworkCore;
 namespace AuthSystem.Models
@@ -27,9 +28,10 @@ namespace AuthSystem.Models
         public DbSet<RegistrationOTPModel> tbl_RegistrationOTPModel { get; set; }
         public DbSet<UserTypeModel> tbl_UserTypeModel { get; set; }
         public DbSet<qrAuditTrailModel> tbl_qrAuditTrailModel { get; set; }
-        
-        
-        
-        
+        public DbSet<FamilyMemberModel> tbl_FamilyMember { get; set; }
+
+
+
+
     }
 }

@@ -27,6 +27,8 @@ using System.Security.Cryptography;
 using System.Net;
 using API.Models;
 using CMS.Models;
+using Org.BouncyCastle.Asn1.Mozilla;
+using static AuthSystem.Data.Controller.ApiPaginationController;
 
 namespace AuthSystem.Data.Controller
 {
@@ -38,6 +40,7 @@ namespace AuthSystem.Data.Controller
     public class ApiRegisterController : ControllerBase
     {
         GlobalVariables gv = new GlobalVariables();
+        DBMethods dbmet = new DBMethods();
         DbManager db = new DbManager();
         private readonly AppSettings _appSettings;
         private ApplicationDbContext _context;
@@ -100,47 +103,54 @@ namespace AuthSystem.Data.Controller
 
             return Ok(item);
         }
-        [HttpGet]
-        public async Task<IActionResult> Corporatelist()
+        [HttpPost]
+        public async Task<IActionResult> Corporatelist(paginateCorpUserv2 data)
         {
-            GlobalVariables gv = new GlobalVariables();
-            string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
-                         tbl_UserTypeModel.UserType, UsersModel.Fullname, UsersModel.Id, UsersModel.DateCreated, tbl_PositionModel.Id AS PositionID, tbl_CorporateModel.Id AS CorporateID, tbl_StatusModel.Name AS status, UsersModel.isVIP, 
-                         UsersModel.FilePath
-FROM            UsersModel INNER JOIN
-                         tbl_CorporateModel ON UsersModel.CorporateID = tbl_CorporateModel.Id LEFT OUTER JOIN
-                         tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
-                         tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
-                         tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2) order by UsersModel.Id desc";
-            var result = new List<UserVM>();
-            DataTable table = db.SelectDb(sql).Tables[0];
-
-            foreach (DataRow dr in table.Rows)
+            string status = "ACTIVE";
+            int pageSize = 10;
+            //var model_result = (dynamic)null;
+            var items = (dynamic)null;
+            int totalItems = 0;
+            int totalVIP = 0;
+            int totalPages = 0;
+            string page_size = pageSize == 0 ? "10" : pageSize.ToString();
+            try
             {
-                var item = new UserVM();
-                item.Id = int.Parse(dr["id"].ToString());
-                item.Fullname = dr["Fname"].ToString() + " " + dr["Lname"].ToString();
-                item.Username = dr["Username"].ToString();
-                item.Fname = dr["Fname"].ToString();
-                item.Lname = dr["Lname"].ToString();
-                item.Email = dr["Email"].ToString();
-                item.Gender = dr["Gender"].ToString();
-                item.EmployeeID = dr["EmployeeID"].ToString();
-                item.Position = dr["Position"].ToString();
-                item.Corporatename = dr["Corporatename"].ToString();
-                item.UserType = dr["UserType"].ToString();
-                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
-                item.CorporateID = dr["CorporateID"].ToString();
-                item.PositionID = dr["PositionID"].ToString();
-                item.status = dr["status"].ToString();
-                item.FilePath = dr["FilePath"].ToString();
-                item.FilePath = dr["FilePath"].ToString();
-                item.isVIP = dr["isVIP"].ToString();
+
+                var Member = dbmet.GetCorporateList(data).ToList();
+                totalItems = Member.Count;
+                totalPages = (int)Math.Ceiling((double)totalItems / int.Parse(page_size.ToString()));
+                items = Member.Skip((data.page - 1) * int.Parse(page_size.ToString())).Take(int.Parse(page_size.ToString())).ToList();
+
+
+
+                var result = new List<PaginationCorpUserModel>();
+                var item = new PaginationCorpUserModel();
+                int pages = data.page == 0 ? 1 : data.page;
+                item.CurrentPage = data.page == 0 ? "1" : data.page.ToString();
+
+                int page_prev = pages - 1;
+                //int t_record = int.Parse(items.Count.ToString()) / int.Parse(page_size);
+
+                double t_records = Math.Ceiling(double.Parse(totalItems.ToString()) / double.Parse(page_size));
+                int page_next = data.page >= t_records ? 0 : pages + 1;
+                item.NextPage = items.Count % int.Parse(page_size) >= 0 ? page_next.ToString() : "0";
+                item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+                item.TotalPage = t_records.ToString();
+                item.PageSize = page_size;
+                item.TotalRecord = totalItems.ToString();
+                item.TotalVIP = totalVIP.ToString();
+                item.items = items;
                 result.Add(item);
+                return Ok(result);
+
+
             }
 
-            return Ok(result);
+            catch (Exception ex)
+            {
+                return BadRequest("ERROR");
+            }
         }
         [HttpGet]
         public async Task<IActionResult> UserAllist()
@@ -805,7 +815,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
                         }
                         else
                         {
-                            result = "Vendor Name already Exist";
+                            result = "Error! Position already exists.";
                             return BadRequest(result);
                         }
                     }
@@ -1144,7 +1154,6 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
 
             return Ok(result);
         }
-        
         [HttpPost]
         public async Task<IActionResult> DeleteUserInfo(DeleteUser data)
         {
@@ -1255,6 +1264,172 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1 order by UsersModel.
             {
                 return ex.Message;
             }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<FamilyMemberModel>> SaveFamilyMember(FamilyMemberModel famMember)
+        {
+            if (_context.tbl_FamilyMember == null)
+            {
+                return Problem("Entity set '_context.tbl_FamilyMember'  is null.");
+            }
+            bool hasDuplicateOnSave = (_context.tbl_FamilyMember?.Any(familyMember => familyMember.Fullname == famMember.Fullname && familyMember.FamilyUserId == famMember.FamilyUserId)).GetValueOrDefault();
+
+
+            if (hasDuplicateOnSave)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            try
+            {
+                _context.tbl_FamilyMember.Add(famMember);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("SaveFamilyMember", new { id = famMember.Id }, famMember);
+            }
+            catch (Exception ex)
+            {
+
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<FamilyMemberpagedModel>>> ListFamilyMember(FamMemberRequest searchFilter)
+        {
+
+            try
+            {
+                List<FamilyMemberModel> famMemberList = await buildFamMemberSearchQuery(searchFilter).ToListAsync();
+                var result = buildBirthTypesPagedModel(searchFilter, famMemberList);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        public class FamMemberRequest
+        {
+            public int FamilyUserId { get; set; }
+            public int page { get; set; }
+            public int pageSize { get; set; }
+        }
+        private IQueryable<FamilyMemberModel> buildFamMemberSearchQuery(FamMemberRequest searchFilter)
+        {
+            IQueryable<FamilyMemberModel> query = _context.tbl_FamilyMember.Where(fam => fam.Status == 1);
+            if (searchFilter.FamilyUserId != 0)
+                query = query.Where(fam => fam.FamilyUserId.Equals(searchFilter.FamilyUserId));
+
+            return query;
+        }
+
+        private List<FamilyMemberpagedModel> buildBirthTypesPagedModel(FamMemberRequest searchFilter, List<FamilyMemberModel> FamMember)
+        {
+            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
+            int page = searchFilter.page == 0 ? 1 : searchFilter.page;
+            var items = (dynamic)null;
+            int totalItems = 0;
+            int totalPages = 0;
+
+            totalItems = FamMember.Count;
+            totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
+            items = FamMember.Skip((page - 1) * pagesize).Take(pagesize).ToList();
+
+            var result = new List<FamilyMemberpagedModel>();
+            var item = new FamilyMemberpagedModel();
+
+            int pages = searchFilter.page == 0 ? 1 : searchFilter.page;
+            item.CurrentPage = searchFilter.page == 0 ? "1" : searchFilter.page.ToString();
+            int page_prev = pages - 1;
+
+            double t_records = Math.Ceiling(Convert.ToDouble(totalItems) / Convert.ToDouble(pagesize));
+            int page_next = searchFilter.page >= t_records ? 0 : pages + 1;
+            item.NextPage = items.Count % pagesize >= 0 ? page_next.ToString() : "0";
+            item.PrevPage = pages == 1 ? "0" : page_prev.ToString();
+            item.TotalPage = t_records.ToString();
+            item.PageSize = pagesize.ToString();
+            item.TotalRecord = totalItems.ToString();
+            item.data = FamMember;
+            result.Add(item);
+
+            return result;
+        }
+        [HttpPost]
+        public async Task<IActionResult> deleteFamilyMember(DeletionModel deletionModel)
+        {
+
+            if (_context.tbl_FamilyMember == null)
+            {
+                return Problem("Entity set '_context.tbl_FamilyMember' is null!");
+            }
+
+            var famMember = await _context.tbl_FamilyMember.FindAsync(deletionModel.id);
+            if (famMember == null || famMember.Status == 0)
+            {
+                return Conflict("No records matched!");
+            }
+
+            try
+            {
+                famMember.Status = 0;
+                //famMember.DateDeleted = DateTime.Now;
+                _context.Entry(famMember).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return Ok("Deletion Successful!");
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> update(int id, FamilyMemberModel famMember)
+        {
+            if (_context.tbl_FamilyMember == null)
+            {
+                return Problem("Entity set '_context.tbl_FamilyMember' is null!");
+            }
+
+            var family = _context.tbl_FamilyMember.AsNoTracking().Where(fam => fam.Status == 1 && fam.Id == id).FirstOrDefault();
+
+            if (family == null)
+            {
+                return Conflict("No records matched!");
+            }
+
+            if (id != family.Id)
+            {
+                return Conflict("Ids mismatched!");
+            }
+
+            bool hasDuplicateOnUpdate = (_context.tbl_FamilyMember?.Any(fam => fam.Status == 1 && fam.Fullname == famMember.Fullname && fam.FamilyUserId == famMember.FamilyUserId && fam.Id != id)).GetValueOrDefault();
+
+            // check for duplication
+            if (hasDuplicateOnUpdate)
+            {
+                return Conflict("Entity already exists");
+            }
+
+            try
+            {
+                _context.Entry(famMember).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok("Update Successful!");
+            }
+            catch (Exception ex)
+            {
+
+                return Problem(ex.GetBaseException().ToString());
+            }
+        }
+
+        public class DeletionModel
+        {
+            public int id { get; set; }
         }
     }
 }

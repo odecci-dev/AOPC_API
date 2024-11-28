@@ -194,7 +194,7 @@ ORDER BY tbl_VendorModel.Id DESC";
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
                          WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 3)";
 
-            if (data.CorpId != null)
+            if(data.CorpId != null)
             {
                 sql += " AND CorporateID = " + data.CorpId;
             }
@@ -210,7 +210,7 @@ ORDER BY tbl_VendorModel.Id DESC";
             {
                 sql += " AND UsersModel.isVIP = " + data.isVIP;
             }
-            if (data.Status != null)
+            if(data.Status != null)
             {
                 sql += " AND tbl_StatusModel.Name = '" + data.Status + "'";
             }

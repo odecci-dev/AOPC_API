@@ -45,14 +45,14 @@ namespace AuthSystem.Data.Controller
 
         public ApiNotifcationController(IOptions<AppSettings> appSettings, ApplicationDbContext context, JwtAuthenticationManager jwtAuthenticationManager)
         {
-
+   
             _context = context;
             _appSettings = appSettings.Value;
             this.jwtAuthenticationManager = jwtAuthenticationManager;
-
+   
         }
 
-        // for CMS
+       // for CMS
         [HttpPost]
         public async Task<IActionResult> InsertNotifications(NotificationInsertModel data)
         {
@@ -62,7 +62,7 @@ namespace AuthSystem.Data.Controller
                 string sql0 = "";
                 string itemid = "";
                 string modulename = data.Module == "Vendor" ? "Vendor" : "Offering";
-                if (modulename == "Offering")
+                if(modulename== "Offering")
                 {
                     sql0 = $@"SELECT TOP (1) OfferingID FROM tbl_OfferingModel order by id desc";
                     DataTable dt2 = db.SelectDb(sql0).Tables[0];
@@ -75,11 +75,11 @@ namespace AuthSystem.Data.Controller
                     DataTable dt2 = db.SelectDb(sql0).Tables[0];
                     itemid = dt2.Rows[0]["VendorID"].ToString();
                 }
-
+             
 
 
                 string sql1 = $@"SELECT EmployeeID  FROM UsersModel WHERE active=1";
-                DataTable table = db.SelectDb(sql1).Tables[0];
+                    DataTable table = db.SelectDb(sql1).Tables[0];
                 foreach (DataRow dr in table.Rows)
                 {
                     string sql = $@"SELECT  * from UsersModel where EmployeeID='" + dr["EmployeeID"].ToString() + "' WHERE active=1";
@@ -90,17 +90,17 @@ namespace AuthSystem.Data.Controller
                         ('" + dr["EmployeeID"].ToString() + "','" + data.Details + "','" + data.isRead + "','" + modulename + "','" + itemid + "','" + data.EmailStatus + "','" + DateTime.Now.ToString("yyyy-MM-dd") + "') ";
                         db.AUIDB_WithParam(Insert);
                     }
-
+                
                     else
                     {
                         result.Status = "Error";
                         return BadRequest(result);
 
                     }
-                }
-                result.Status = "New Notifications Added";
-                return Ok(result);
-
+            }
+                    result.Status = "New Notifications Added";
+                    return Ok(result);
+              
             }
 
             catch (Exception ex)
@@ -113,7 +113,7 @@ namespace AuthSystem.Data.Controller
         {
             string sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated,Module,ItemID,EmailStatus
                             FROM            tbl_NotificationModel
-                            WHERE        (EmployeeID = '" + data.EmployeeID + "')  and tbl_NotificationModel.isRead = 0  order by id desc";
+                            WHERE        (EmployeeID = '" +data.EmployeeID + "')  and tbl_NotificationModel.isRead = 0  order by id desc";
             var result = new List<NotificationModel>();
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
@@ -143,26 +143,26 @@ namespace AuthSystem.Data.Controller
                 {
                     delete += $@" update tbl_NotificationModel set isRead ='1'  where EmployeeID='" + data.EmployeeID + "'";
                 }
-
+                 
                 return Ok(db.AUIDB_WithParam(delete) + " Marked Read All");
             }
             else
             {
                 return BadRequest("Error/Deleted Data");
             }
-
-        }
+               
+            }
         [HttpPost]
         public async Task<IActionResult> UpdateNotification(NotifIdUpdate data)
         {
-
+        
             string sql = $@"SELECT * from  tbl_NotificationModel where id='" + data.id + "' and EmployeeID='" + data.EmployeeID + "'";
             DataTable table = db.SelectDb(sql).Tables[0];
             if (table.Rows.Count != 0)
             {
                 string Insert = $@" update tbl_NotificationModel set isRead ='1'  where id='" + data.id + "' and EmployeeID='" + data.EmployeeID + "'";
-
-                return Ok(db.AUIDB_WithParam(Insert) + " Read");
+                
+                return Ok(db.AUIDB_WithParam(Insert) +" Read");
             }
             else
             {
@@ -183,7 +183,7 @@ namespace AuthSystem.Data.Controller
 
             foreach (DataRow dr in table.Rows)
             {
-                string read = dr["isRead"].ToString() == "1" ? "Read" : "Unread";
+                string read = dr["isRead"].ToString() == "1" ? "Read" :"Unread";
 
                 var item = new NotificationVM();
                 item.Id = dr["Id"].ToString();
@@ -210,7 +210,7 @@ namespace AuthSystem.Data.Controller
             {
                 List<CorporateNotificationData> item = new List<CorporateNotificationData>();
                 item = dbmet.GetCompanyUserDetails(data.CorporateList[x]);
-                foreach (var a in item)
+                foreach(var a in item)
                 {
                     string Insert = $@"insert into tbl_NotificationModel (EmployeeID,Details,isRead,Module,ItemID,EmailStatus,DateCreated) values
                         ('" + a.EmployeeID + "','" + data.Body + "','" + isRead + "','" + "Company" + "','" + a.CompanyID + "','" + 15 + "','" + DateTime.Now.ToString("yyyy-MM-dd") + "') ";
@@ -219,21 +219,21 @@ namespace AuthSystem.Data.Controller
             }
             return Ok();
         }
-        //NEW
+
         [HttpPost]
         public async Task<IActionResult> SendNotificationForActiveUser()
         {
             int isRead = 0;
-            string body = "Dear Valued Member, \r\nWe would like to inform you that, due to exceptionally high guest occupancy at The St. Regis Doha, external access to the pool and beach facilities will be restricted on November 21st, 22nd, and 23rd.\r\n \r\nThank you for your understanding and we apologize for any inconvenience caused.";
+            string body = "Dear Valued Member, \r\n\nWe would like to inform you that, due to exceptionally high guest occupancy at The St. Regis Doha, external access to the pool and beach facilities will be restricted on November 28th, 29th, and 30th.\r\n \r\nThank you for your understanding and we apologize for any inconvenience caused.";
             List<CorporateNotificationData> item = new List<CorporateNotificationData>();
             item = dbmet.GetAllActiveusers();
             foreach (var a in item)
-            {
+                {
                 string Insert = $@"insert into tbl_NotificationModel (EmployeeID,Details,isRead,Module,ItemID,EmailStatus,DateCreated) values
                 ('" + a.EmployeeID + "','" + body + "','" + isRead + "','" + " " + "','" + " " + "','" + 15 + "','" + DateTime.Now.ToString("yyyy-MM-dd") + "') ";
                 db.AUIDB_WithParam(Insert);
-            }
-
+                }
+            
             return Ok();
         }
 
@@ -267,7 +267,7 @@ namespace AuthSystem.Data.Controller
             public string? ItemID { get; set; }
             public string? EmailStatus { get; set; }
 
-        }
+        }   
         public class NotificationVM
         {
 

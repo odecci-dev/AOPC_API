@@ -38,7 +38,7 @@ namespace AuthSystem.Data.Controller
         [HttpPost]
         public IActionResult FinalUserRegistration(UserModel data)
         {
-
+            //asdasdaq
 
 
             string sql = $@"SELECT        UsersModel.Id, UsersModel.Username, UsersModel.Password, UsersModel.Fullname, UsersModel.Active, tbl_UserTypeModel.UserType, tbl_CorporateModel.CorporateName, tbl_PositionModel.Name, UsersModel.JWToken

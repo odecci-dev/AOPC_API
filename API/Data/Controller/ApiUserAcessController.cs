@@ -606,7 +606,7 @@ namespace AuthSystem.Data.Controller
             var item = new UserDetailsVM();
             if (table.Rows.Count != 0)
             {
-
+          
                 item.Id = int.Parse(table.Rows[0]["Id"].ToString());
                 item.Username = table.Rows[0]["Username"].ToString();
                 item.Fname = table.Rows[0]["Fname"].ToString();
@@ -632,13 +632,13 @@ namespace AuthSystem.Data.Controller
                 item.VIPCard = table.Rows[0]["VIPCard"].ToString();
                 item.QRFrame = table.Rows[0]["QRFrame"].ToString();
                 item.VIPBadge = table.Rows[0]["VIPBadge"].ToString();
-                return Ok(item);
+
+
+
+           
+
             }
-            else
-            {
-                return Conflict("Error");
-            }
-            
+            return Ok(item);
         }
         [HttpPost]
         public IActionResult AdminLogIn(string username, string password)
